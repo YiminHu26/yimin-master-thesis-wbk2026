@@ -64,6 +64,20 @@ See the `% PENDING` block at the top of `main.tex`:
 - Two bib entries still have `author = {... and others}` placeholders — complete before final submission
 - `besl1992` is flagged as a seminal >10-year-old source — acknowledge age when citing
 
+## Git Workflow
+
+Repository: https://github.com/YiminHu26/yimin-master-thesis-wbk2026
+Remote: `origin` → `main` (tracking set up)
+
+After each writing session, commit and push:
+```bash
+git add main.tex references.bib   # add whichever files changed
+git commit -m "Ch3: add CoG constraint implementation section"
+git push
+```
+
+Commit message convention: `ChN: <what changed>` for chapter edits, `refs: <what>` for bibliography changes, `outline: <what>` for outline updates.
+
 ## Key Repositories (External)
 
 - Main pipeline: `github.com/SFB-Circular-Factory-WG-C/Yimin_Dochub`
