@@ -34,7 +34,7 @@
 
 ## Overview
 
-The thesis opens by establishing that flexible, model-free grasping is a structural necessity in circular manufacturing and that current methods fail two object-level geometric priors. Chapter 2 traces the field from rigid CAD-based methods through ML approaches to vMF-Contact, exposing both gaps. Chapter 3 presents the combined system as a principled response: CoG-based geometric constraints (software), a custom fingertip (hardware), and a ROS2+Docker closed-loop pipeline (integration). Chapter 4 reports the three-condition evaluation across 5×8×9 trials with per-orientation and per-position breakdowns. Chapter 5 interprets the results in context of the benchmark, critiques evaluation methodology, acknowledges limitations, and provides deployment guidance. Chapter 6 closes the narrative loop and states the meta-implication beyond the specific system.
+The thesis opens by establishing that flexible, model-free grasping is a structural necessity in circular manufacturing and that current methods fail two object-level geometric priors. Chapter 2 traces the field from rigid CAD-based methods through ML approaches to vMF-Contact, exposing both gaps. Chapter 3 presents the combined system as a principled response: CoG-based geometric constraints (software), a custom fingertip (hardware), and a ROS2+Docker closed-loop pipeline (integration). Chapter 4 reports the three-condition evaluation across <mark>3×8×6</mark> trials with per-orientation and per-position breakdowns. Chapter 5 interprets the results in context of the benchmark, critiques evaluation methodology, acknowledges limitations, and provides deployment guidance. Chapter 6 closes the narrative loop and states the meta-implication beyond the specific system.
 
 ---
 
@@ -111,7 +111,7 @@ The thesis opens by establishing that flexible, model-free grasping is a structu
 **Purpose:** Narrow from the broad context to the two specific technical gaps.
 
 **Content:**
-- vMF-Contact: current state-of-the-art for uncertainty-aware grasp generation — 72.7% on lab benchmarks
+- vMF-Contact: <mark>current state-of-the-art for uncertainty-aware grasp generation — 72.7% on lab benchmarks (according to source  Shi et al. (2024))</mark>
 - **Gap A (algorithmic):** encodes local contact geometry but not the spatial relationship between grasp point and object centroid
 - **Gap B (algorithmic):** does not encode alignment between gripper axis and object's principal axis
 - Consequence: on a heavy asymmetric object (angle grinder, ~2 kg), these missing priors produce F1 grip failures (insufficient force) and F4 orientation errors (upside-down placement)

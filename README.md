@@ -9,7 +9,7 @@
 
 ## Research Question
 
-> **Primary RQ:** To what extent do CoG-based geometric constraints improve grasping success rate and placement orientation consistency of an angle grinder compared to unconstrained vMF-Contact?
+> **Primary RQ:** To what extent do CoG(center of gravity)-based geometric constraints improve grasping success rate and placement orientation consistency of an angle grinder compared to unconstrained vMF-Contact?
 
 > **Sub-RQ:** Under what orientations, positions, and failure modes does the CoG-constrained method produce unsuccessful grasps?
 
@@ -38,7 +38,7 @@ vMF-Contact achieves 72.7% on lab benchmarks but leaves two gaps unaddressed:
 
 | # | Type | Description | Effect |
 |---|------|-------------|--------|
-| **A** | Software | CoG-based geometric constraints added to vMF-Contact: annular grip zone (`grasp_cog_dist_th`, `grasp_cog_min_dist_th`) + gripper axis / principal axis alignment (`cog_axis`, `cog_axis_projection_th`) | Baseline 1 (<5%) → Baseline 2 (~50%) |
+| **A** | Software | CoG-based geometric constraints added to vMF-Contact: annular grip zone (`grasp_cog_max_dist_th`, `grasp_cog_min_dist_th`) + gripper axis / principal axis alignment (`cog_axis`, `cog_axis_projection_th`) | Baseline 1 (<5%) → Baseline 2 (~50%) |
 | **B** | Hardware | Custom fingertip with curved geometry (matches cylindrical profile) and silicone overlay (increases friction) for Robotiq 2F-140 | Baseline 2 (~50%) → Final (80%) |
 | **C** | Systems | ROS2 + Docker closed-loop pipeline: vMF-Contact inference on Jetson Orin Nano → MoveIt on Ubuntu 22.04 → UR10e pick-transport-place | Enables end-to-end evaluation |
 
@@ -61,7 +61,7 @@ Baseline 1 is dominated by F4 and F1 — confirming Gap A as the proximate cause
 
 ## Experimental Setup and Results
 
-**Protocol:** 5 trials × 8 orientations × 9 positions = 360 trials per condition, randomised order.  
+**Protocol:** 3 trials × 8 orientations × 6 positions = 144 trials per condition, randomised order.  
 **Success criterion:** complete pick-transport-place cycle with correct object orientation on CT-cell holder.  
 **Hardware:** Orbbec Femto Mega (RGBD) → Docker on Nvidia Jetson Orin Nano → MoveIt on Ubuntu 22.04 workstation → UR10e + Robotiq 2F-140.
 
@@ -73,7 +73,7 @@ Baseline 1 is dominated by F4 and F1 — confirming Gap A as the proximate cause
 
 The factorial decomposition isolates each contribution independently: Baseline 1 → Baseline 2 quantifies the software contribution (+~45 pp); Baseline 2 → Final quantifies the hardware contribution (+~30 pp).
 
-The Final condition (80%) exceeds the Shi et al. (2025) lab benchmark (72.7%) despite three systematic disadvantages: a heavier object (~2 kg vs. ≤1 kg), a weaker gripper (2F-140 at 125 N vs. 2F-85 at 185 N), and a compound pick-transport-place metric vs. isolated grasp success.
+The Final condition (80%) exceeds the Shi et al. (2025) lab benchmark (72.7%) despite three systematic disadvantages: a heavier object (~2 kg vs. ≤1 kg), a weaker gripper (2F-140 at 125 N vs. 2F-85 at 235 N), and a compound pick-transport-place metric vs. isolated grasp success.
 
 ---
 
