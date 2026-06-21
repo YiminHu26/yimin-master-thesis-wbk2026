@@ -184,7 +184,7 @@ This thesis makes three contributions.
 
 \section{Experimental Overview and Key Results}
 
-Evaluation is conducted across 360 trials structured as a 5-position $\times$ 8-orientation $\times$ 9-repetition matrix under three conditions. Baseline~1 runs unconstrained vMF-Contact inference with the original Robotiq fingertip. Baseline~2 runs the centroid-constrained algorithm with the same fingertip. The Final condition uses the centroid-constrained algorithm with the custom fingertip. This factorial design isolates the software contribution (Baseline~1 versus Baseline~2) from the hardware contribution (Baseline~2 versus Final).
+Evaluation is conducted across 360 trials structured as a 6-position $\times$ 8-orientation $\times$ 3-repetition matrix under three conditions. Baseline~1 runs unconstrained vMF-Contact inference with the original Robotiq fingertip. Baseline~2 runs the centroid-constrained algorithm with the same fingertip. The Final condition uses the centroid-constrained algorithm with the custom fingertip. This factorial design isolates the software contribution (Baseline~1 versus Baseline~2) from the hardware contribution (Baseline~2 versus Final).
 
 Baseline~1 achieves a success rate below 5\,\%, confirming that unconstrained inference is not viable for the task. Baseline~2 reaches approximately 50\,\%, demonstrating that centroid-based constraints produce a substantial and necessary improvement. The Final condition achieves 80\,\%, demonstrating viability under conditions more demanding than the published vMF-Contact benchmark of 72.7\,\%~\cite{shi2025} --- lower grip force, a heavier object, and a stricter success criterion encompassing the full pick-transport-place sequence.
 
@@ -245,7 +245,7 @@ Two gaps emerge from this review.
 
 \textbf{Gap B --- Absence of systematic deployment evaluation.} The literature provides isolated grasp benchmarks but not structured deployment studies with failure mode stratification, real hardware-object constraints, and downstream task success as the primary criterion.
 
-This thesis addresses Gap~A through centroid-based geometric constraints added to the vMF-Contact inference pipeline (Contribution~A) and a purpose-designed fingertip that targets the dominant residual failure mode (Contribution~B). It addresses Gap~B through a structured 5-position $\times$ 8-orientation $\times$ 9-repetition deployment evaluation under three experimental conditions on a real UR10e cell (Contribution~C).
+This thesis addresses Gap~A through centroid-based geometric constraints added to the vMF-Contact inference pipeline (Contribution~A) and a purpose-designed fingertip that targets the dominant residual failure mode (Contribution~B). It addresses Gap~B through a structured 6-position $\times$ 8-orientation $\times$ 3-repetition deployment evaluation under three experimental conditions on a real UR10e cell (Contribution~C).
 
 
 % ============================================================
@@ -314,17 +314,17 @@ where $\hat{c}$ is the geometric centroid proxy, $c_{\mathrm{obb}}$ is the centr
 
 The threshold values applied in this work are:
 \begin{itemize}
-  \item $d_{\max}$ = \param{grasp\_cog\_dist\_th} = 0.05\,m (outer bound)
-  \item $d_{\min}$ = \param{grasp\_cog\_min\_dist\_th} = 0.03\,m (inner bound)
+  \item $d_{\max}$ = \param{grasp\_cog\_max\_dist\_th} = 0.025\,m (outer bound)
+  \item $d_{\min}$ = \param{grasp\_cog\_min\_dist\_th} = 0.01\,m (inner bound)
 \end{itemize}
 
-These define an annular grip zone centred on the centroid proxy. Candidates beyond 0.05\,m are rejected to prevent grip force insufficiency caused by excessive moment arm. Candidates within 0.03\,m are rejected because the gripper jaws cannot physically close at positions coincident with or immediately adjacent to the object's body centre. The threshold values are geometrically motivated: the angle grinder's handle midpoint lies approximately 35\,mm from the centroid proxy, placing it within the $[0.03, 0.05]$\,m annulus. They were validated against the physical geometry of the object and are not the result of optimisation over trial outcomes. Their object-specificity is a stated limitation, discussed in Chapter~5.
+These define an annular grip zone centred on the centroid proxy. Candidates beyond 0.025\,m are rejected to prevent grip force insufficiency caused by excessive moment arm. Candidates within 0.01\,m are rejected because the gripper jaws cannot physically close at positions coincident with or immediately adjacent to the object's body centre. The threshold values are geometrically motivated: the angle grinder's handle midpoint lies approximately 35\,mm from the centroid proxy, placing it within the $[0.01, 0.025]$\,m annulus. They were validated against the physical geometry of the object and are not the result of optimisation over trial outcomes. Their object-specificity is a stated limitation, discussed in Chapter~5.
 
 % Figure 3.2 placeholder
 \begin{figure}[htbp]
   \centering
   \fbox{\parbox{0.8\textwidth}{\centering\vspace{3cm}
-    \textit{[Figure 3.2: Annular grip zone on the angle grinder point cloud. Inner radius $d_{\min}$ = 0.03\,m, outer radius $d_{\max}$ = 0.05\,m, centred on geometric centroid proxy $\hat{c}$.]}
+    \textit{[Figure 3.2: Annular grip zone on the angle grinder point cloud. Inner radius $d_{\min}$ = 0.01\,m, outer radius $d_{\max}$ = 0.025\,m, centred on geometric centroid proxy $\hat{c}$.]}
     \vspace{3cm}}}
   \caption{Centroid-based annular grip zone (Equation~\ref{eq:cog}). Candidates within the shaded annulus are retained; candidates outside are discarded.}
   \label{fig:annular_zone}
@@ -388,45 +388,45 @@ The complete pipeline is available at: \url{https://github.com/SFB-Circular-Fact
 \subsection{Trial Matrix}
 \label{sec:trial_matrix}
 
-The evaluation is structured as a $5 \times 8 \times 9$ factorial matrix: five object positions, eight object orientations, and nine repetitions per cell, yielding 360 trials per experimental condition. All trials are conducted on the UR10e + Orbbec Femto Mega + Robotiq 2F-140 cell described in Chapter~3 under three conditions:
+The evaluation is structured as a $3 \times 8 \times 6$ factorial matrix: five object positions, eight object orientations, and nine repetitions per cell, yielding 144 trials per experimental condition. All trials are conducted on the UR10e + Orbbec Femto Mega + Robotiq 2F-140 cell described in Chapter~3 under three conditions:
 
 \begin{itemize}
   \item \textbf{Baseline~1:} vMF-Contact inference without centroid-based constraints, with the original Robotiq flat fingertip.
-  \item \textbf{Baseline~2:} vMF-Contact inference with centroid-based constraints (\param{grasp\_cog\_dist\_th} = 0.05\,m, \param{grasp\_cog\_min\_dist\_th} = 0.03\,m, axis projection filter), with the original Robotiq flat fingertip.
+  \item \textbf{Baseline~2:} vMF-Contact inference with centroid-based constraints (\param{grasp\_cog\_max\_dist\_th} = 0.025\,m, \param{grasp\_cog\_min\_dist\_th} = 0.01\,m, axis projection filter), with the original Robotiq flat fingertip.
   \item \textbf{Final:} vMF-Contact inference with centroid-based constraints, with the custom curved silicone fingertip.
 \end{itemize}
 
 Baseline~1 versus Baseline~2 isolates the software contribution, holding hardware constant. Baseline~2 versus Final isolates the hardware contribution, holding the algorithm constant. This factorial structure ensures that each contribution is attributable to a single changed variable.
 
-Statistical inference is conducted at the condition level (360 trials per condition); cell-level success rates (9 repetitions per position-orientation cell) carry a 95\,\% confidence interval width of approximately $\pm$26 percentage points and should be interpreted as descriptive rather than inferential.
+Statistical inference is conducted at the condition level (144 trials per condition); cell-level success rates (3 repetitions per position-orientation cell) carry a 95\,\% confidence interval width of approximately $\pm$26 percentage points and should be interpreted as descriptive rather than inferential.
 
 \subsection{Object Positions and Orientations}
 
 The five object positions (P1--P5) span the AGV delivery zone reachable by the UR10e, distributed to cover the range of expected delivery offsets encountered in the circular factory cell. The eight orientations (O1--O8) sample the angle grinder's rotational space at approximately 45$^\circ$ intervals around the vertical axis, probing the full range of top-down approach angles available to the parallel-jaw gripper. These orientations include configurations in which the tool head faces toward and away from the robot, and intermediate diagonal angles. They were selected without exclusion of orientations suspected to be kinematically difficult, to ensure that the reported success rates reflect realistic deployment conditions rather than a curated subset.
 
-For each (position, orientation) cell, the angle grinder is manually placed to the target configuration before each of the nine repetitions by the experimenter. This ensures that each repetition reflects an independent sensing and inference cycle rather than repeated planning on a fixed input.
+For each (position, orientation) cell, the angle grinder is manually placed to the target configuration before each of the three repetitions by the experimenter. This ensures that each repetition reflects an independent sensing and inference cycle rather than repeated planning on a fixed input.
 
 \subsection{Success Criterion}
 
-A trial is recorded as a success if and only if the angle grinder is lifted from the delivery position and transported to the CT scanner placement zone without being dropped, with the handle axis within $\pm$20$^\circ$ of the target direction at placement. Trials in which the gripper closes but the object is released during transport (F1), in which no valid candidate is selected after filtering (F2), in which the motion planner does not find a feasible trajectory within the planning time budget (F3), or in which the object arrives at the placement zone with an inverted or out-of-tolerance orientation (F4) are recorded as failures and classified by failure mode. All 360 trials per condition are included in the reported success rate; no trials are excluded after data collection.
+A trial is recorded as a success if and only if the angle grinder is lifted from the delivery position and transported to the CT scanner placement zone without being dropped, with the handle axis within $\pm$20$^\circ$ of the target direction at placement. Trials in which the gripper closes but the object is released during transport (F1), in which no valid candidate is selected after filtering (F2), in which the motion planner does not find a feasible trajectory within the planning time budget (F3), or in which the object arrives at the placement zone with an inverted or out-of-tolerance orientation (F4) are recorded as failures and classified by failure mode. All 144 trials per condition are included in the reported success rate; no trials are excluded after data collection.
 
 \section{Results by Condition}
 
 \subsection{Condition Success Rates}
 
-Table~\ref{tab:success_rates} summarises the overall success rates for each condition across all 360 trials.
+Table~\ref{tab:success_rates} summarises the overall success rates for each condition across all 144 trials.
 
 \begin{table}[htbp]
   \centering
-  \caption{Overall success rates per condition (360 trials each). Enter exact success counts from experimental logs.}
+  \caption{Overall success rates per condition (144 trials each). Enter exact success counts from experimental logs.}
   \label{tab:success_rates}
   \begin{tabular}{llllr}
     \toprule
     Condition & Algorithm & Fingertip & Successes & Rate \\
     \midrule
-    Baseline~1 & vMF-Contact (unconstrained) & Robotiq original (flat) & {[}LOGS{]} / 360 & $<$5\,\% \\
-    Baseline~2 & vMF-Contact + CoG constraints & Robotiq original (flat) & {[}LOGS{]} / 360 & $\sim$50\,\% \\
-    Final       & vMF-Contact + CoG constraints & Custom silicone          & {[}LOGS{]} / 360 & 80\,\% \\
+    Baseline~1 & vMF-Contact (unconstrained) & Robotiq original (flat) & {[}LOGS{]} / 144 & $<$5\,\% \\
+    Baseline~2 & vMF-Contact + CoG constraints & Robotiq original (flat) & {[}LOGS{]} / 144 & $\sim$50\,\% \\
+    Final       & vMF-Contact + CoG constraints & Custom silicone          & {[}LOGS{]} / 144 & 80\,\% \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -540,7 +540,7 @@ Third, the 80\,\% Final result demonstrates viability under conditions more dema
 
 The three-condition design produces two independent effect measurements with clear attribution. The Baseline~1 to Baseline~2 transition --- from below 5\,\% to approximately 50\,\% --- quantifies the software contribution of centroid-based constraints, with hardware held constant. The Baseline~2 to Final transition --- from approximately 50\,\% to 80\,\% --- quantifies the hardware contribution of the custom fingertip, with the algorithm held constant. Both effect sizes are large and unambiguous; neither contribution is marginal.
 
-The magnitude of the Baseline~1 result deserves emphasis. A success rate below 5\,\% on 360 trials means the unconstrained algorithm succeeds at this task in fewer than one in twenty attempts. This is not a moderate performance deficit --- it is a near-complete failure of the base method in this deployment context. The vMF-Contact algorithm, which achieves 72.7\,\% on a controlled benchmark~\cite{shi2025}, is effectively unusable without adaptation. The two centroid-based constraints address a principled omission in the original algorithm --- the absence of object-level spatial priors --- rather than compensating for incidental environmental factors.
+The magnitude of the Baseline~1 result deserves emphasis. A success rate below 5\,\% on 144 trials means the unconstrained algorithm succeeds at this task in fewer than one in twenty attempts. This is not a moderate performance deficit --- it is a near-complete failure of the base method in this deployment context. The vMF-Contact algorithm, which achieves 72.7\,\% on a controlled benchmark~\cite{shi2025}, is effectively unusable without adaptation. The two centroid-based constraints address a principled omission in the original algorithm --- the absence of object-level spatial priors --- rather than compensating for incidental environmental factors.
 
 The Baseline~2 result ($\sim$50\,\%) identifies an equally important finding: a system that selects mechanically valid, correctly oriented candidates half the time still fails half the time, because the gripper cannot sustain grip through transport. Algorithmic improvement is necessary but not sufficient. The custom fingertip addresses a hardware-object mismatch that no modification to the inference pipeline can resolve. The combined system (Final, 80\,\%) demonstrates that both dimensions of the deployment problem must be addressed independently.
 
@@ -560,7 +560,7 @@ The failure sequence --- high epistemic uncertainty $\rightarrow$ sparse centroi
 
 \section{Deployment Evaluation as a Research Contribution}
 
-The structured deployment evaluation contributes methodologically, independently of the algorithm and hardware adaptations. The three-condition design --- 1,080 trials, two isolated factorial comparisons, failure mode stratification across a position $\times$ orientation matrix --- illustrates how the gap between laboratory benchmark performance and real industrial deployment can be characterised and decomposed.
+The structured deployment evaluation contributes methodologically, independently of the algorithm and hardware adaptations. The three-condition design --- 432 trials, two isolated factorial comparisons, failure mode stratification across a position $\times$ orientation matrix --- illustrates how the gap between laboratory benchmark performance and real industrial deployment can be characterised and decomposed.
 
 The existing evaluation paradigm for grasping methods reports isolated grasp success under controlled conditions: calibrated placement, clean point clouds, success measured at gripper closure. This protocol is well-suited for comparing methods under reproducible conditions; it is not designed to characterise deployment performance. Deployment success is a system-level property. It compounds hardware-object compatibility, sensor noise from real environments, kinematic constraints of the specific robot platform, and downstream task requirements. None of these factors appears in isolated grasp benchmarks. The gap between 72.7\,\% (benchmark) and less than 5\,\% (this deployment without adaptation) is not attributable to any single factor --- it is the compound product of missing geometric priors, hardware-object force mismatch, and a stricter success criterion operating together.
 
@@ -568,7 +568,7 @@ The Baseline~1 result demonstrates that published benchmark performance does not
 
 \section{Limitations}
 
-\textbf{Object-specificity of CoG parameters.} The centroid distance thresholds (\param{grasp\_cog\_dist\_th} = 0.05\,m, \param{grasp\_cog\_min\_dist\_th} = 0.03\,m) and axis projection tolerance are calibrated to the angle grinder's geometry. Extending the system to a second class requires repeating the parameter validation procedure. Whether a unified parameter set generalises across a family of elongated asymmetric objects remains an open question.
+\textbf{Object-specificity of CoG parameters.} The centroid distance thresholds (\param{grasp\_cog\_max\_dist\_th} = 0.025\,m, \param{grasp\_cog\_min\_dist\_th} = 0.01\,m) and axis projection tolerance are calibrated to the angle grinder's geometry. Extending the system to a second class requires repeating the parameter validation procedure. Whether a unified parameter set generalises across a family of elongated asymmetric objects remains an open question.
 
 \textbf{Single-object scene requirement.} The centroid proxy is computed from the full filtered point cloud without instance segmentation. In a multi-object scene, the computed centroid averages across all objects present, making the spatial filter geometrically undefined. The system therefore requires single-object placement in the delivery zone. This is a constraint of the CoG approach, not of vMF-Contact itself; the base algorithm handles cluttered multi-object scenes through contact-normal sampling. Introducing an instance segmentation module --- a PointNet++~\cite{qi2017pointnet2} segmentation head or a dedicated 3D instance segmentation network --- would restore multi-object capability while preserving the CoG constraint logic, and is the most direct path to extending the current system to cluttered scenes.
 
@@ -599,7 +599,7 @@ Each unsuitability is addressable through specific, tractable future work. None 
 
 This thesis asked: to what extent do centroid-based geometric constraints improve the grasping success rate and placement orientation consistency of an angle grinder compared to unconstrained vMF-Contact inference, under the same hardware configuration?
 
-The answer is unambiguous. Unconstrained vMF-Contact inference achieves a success rate below 5\,\% on the $5 \times 8 \times 9$ trial matrix. Centroid-based constraints raise this to approximately 50\,\%. The addition of a custom curved silicone fingertip raises it further to 80\,\%. The improvement from constraints alone --- approximately 45 percentage points --- demonstrates that the algorithmic adaptation is both necessary and effective. The further improvement from the fingertip --- approximately 30 percentage points --- demonstrates that hardware-object compatibility is an independent, load-bearing factor that no algorithm modification can substitute for.
+The answer is unambiguous. Unconstrained vMF-Contact inference achieves a success rate below 5\,\% on the $3 \times 8 \times 6$ trial matrix. Centroid-based constraints raise this to approximately 50\,\%. The addition of a custom curved silicone fingertip raises it further to 80\,\%. The improvement from constraints alone --- approximately 45 percentage points --- demonstrates that the algorithmic adaptation is both necessary and effective. The further improvement from the fingertip --- approximately 30 percentage points --- demonstrates that hardware-object compatibility is an independent, load-bearing factor that no algorithm modification can substitute for.
 
 Three contributions realise these results. Contribution~A introduces two parameter-governed centroid-based constraints into the vMF-Contact inference pipeline: an annular grip zone defined relative to the object's geometric centroid proxy, and a gripper-axis alignment constraint with the object's principal axis. These address grip force insufficiency and orientation error --- the two dominant failure modes of unconstrained inference on this task --- through principled geometric constraints rather than post-hoc filtering. Contribution~B is a custom fingertip for the Robotiq 2F-140, incorporating a curved contact surface matched to the angle grinder handle and a silicone friction layer, which addresses the grip force insufficiency that persists after algorithmic correction. Contribution~C is the ROS2 and Docker integration pipeline that enables reproducible deployment of the full system on the UR10e cell.
 
@@ -609,7 +609,7 @@ The Final condition result of 80\,\% demonstrates viability under conditions mor
 
 \textbf{Gap A --- Missing geometric priors.} Prior learning-based grasping methods, including vMF-Contact, encode local contact geometry but not object-level spatial relationships. The centroid-based constraints introduced in Contribution~A directly address this omission. The Baseline~1 to Baseline~2 result provides quantitative evidence that these priors are necessary for this task class: without them, the algorithm fails on nearly every trial.
 
-\textbf{Gap B --- Absence of systematic deployment evaluation.} Prior work provides benchmark comparisons but not structured deployment studies with failure mode stratification, real hardware-object constraints, and a full pick-transport-place success criterion. The 1,080-trial evaluation across three conditions, eight orientations, and five positions fills this gap for the specific deployment studied here. The failure mode analysis demonstrates what this style of evaluation reveals that isolated benchmarks do not: the specific conditions under which a validated method succeeds and fails in a real industrial cell.
+\textbf{Gap B --- Absence of systematic deployment evaluation.} Prior work provides benchmark comparisons but not structured deployment studies with failure mode stratification, real hardware-object constraints, and a full pick-transport-place success criterion. The 432-trial evaluation across three conditions, eight orientations, and six positions fills this gap for the specific deployment studied here. The failure mode analysis demonstrates what this style of evaluation reveals that isolated benchmarks do not: the specific conditions under which a validated method succeeds and fails in a real industrial cell.
 
 \section{Future Work}
 
