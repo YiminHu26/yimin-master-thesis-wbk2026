@@ -15,6 +15,9 @@
 *.ind
 *.brf
 
+# Claude Code local config
+.claude/
+
 # Editor temp files
 *.swp
 *~
