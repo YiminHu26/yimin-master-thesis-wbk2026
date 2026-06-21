@@ -1,0 +1,639 @@
+% ============================================================
+% main.tex — Master Thesis
+% Title: CoG-Based Geometric Constraints and Custom Fingertip
+%         Design for Reliable Industrial Deployment of
+%         vMF-Contact Grasping on a UR10e Collaborative Robot
+% Author: Yimin Hu
+% Affiliation: Karlsruhe Institute of Technology (KIT)
+%              SFB-1574 Circular Factory
+% Date: 2026
+% Citation style: IEEE
+% ============================================================
+% PENDING BEFORE SUBMISSION:
+%   [ ] Fill Tables 4.1, 4.2, 4.3 from experimental logs
+%   [ ] Substitute exact chi-squared statistics in Section 4.2.1
+%   [ ] Verify 72.7% figure against ICRA 2025 proceedings PDF
+%   [ ] Enter total end-to-end cycle time in Section 3.6
+%   [ ] Verify full author lists: cai2024, shi2025
+%   [ ] Insert Figures 3.1, 3.2, 3.3
+%   [ ] Add abstract (use /ars-abstract)
+%   [ ] Add AI-usage disclosure statement (use /ars-disclosure)
+% ============================================================
+
+\documentclass[12pt, a4paper]{report}
+
+% --- Page layout ---
+\usepackage[a4paper, top=2.5cm, bottom=2.5cm, left=3cm, right=2.5cm]{geometry}
+
+% --- Typography ---
+\usepackage{microtype}
+\usepackage{setspace}
+\onehalfspacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{8pt}
+
+% --- Mathematics ---
+\usepackage{amsmath, amssymb}
+
+% --- Graphics and tables ---
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage[table]{xcolor}
+
+% --- Bibliography (IEEE style) ---
+\usepackage{cite}
+
+% --- Headers and footers ---
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\nouppercase{\leftmark}}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\fancypagestyle{plain}{
+  \fancyhf{}
+  \fancyfoot[C]{\thepage}
+  \renewcommand{\headrulewidth}{0pt}
+}
+
+% --- Hyperlinks ---
+\usepackage[hidelinks, breaklinks=true]{hyperref}
+\usepackage{url}
+
+% --- Code/parameter names ---
+\newcommand{\param}[1]{\texttt{#1}}
+
+% --- Placeholder boxes for figures ---
+\newcommand{\figplaceholder}[2]{%
+  \begin{figure}[htbp]
+    \centering
+    \fbox{\parbox{0.7\textwidth}{\centering\vspace{2cm}%
+      \textit{[Figure placeholder: #1]}\vspace{2cm}}}
+    \caption{#2}
+  \end{figure}%
+}
+
+% ============================================================
+\begin{document}
+
+% ============================================================
+% TITLE PAGE
+% ============================================================
+\begin{titlepage}
+  \centering
+  \vspace*{2cm}
+
+  {\LARGE\bfseries
+    CoG-Based Geometric Constraints and Custom Fingertip Design\\[0.4em]
+    for Reliable Industrial Deployment of vMF-Contact Grasping\\[0.4em]
+    on a UR10e Collaborative Robot\par}
+
+  \vspace{1.5cm}
+  {\large Master's Thesis\par}
+  \vspace{0.5cm}
+  {\large submitted in partial fulfilment of the requirements\\
+    for the degree of Master of Science\par}
+
+  \vspace{2cm}
+  {\large by\par}
+  \vspace{0.5cm}
+  {\Large\bfseries Yimin Hu\par}
+
+  \vspace{2cm}
+  {\large
+    Karlsruhe Institute of Technology (KIT)\\
+    SFB-1574 Circular Factory for the Future\\
+    \par}
+
+  \vfill
+  {\large June 2026\par}
+\end{titlepage}
+
+% ============================================================
+% FRONT MATTER
+% ============================================================
+\pagenumbering{roman}
+
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+% TODO: Generate bilingual abstract using /ars-abstract before submission.
+\textit{[Abstract to be added. Run \texttt{/ars-abstract} to generate bilingual abstract (English + German/Chinese) with 5--7 keywords.]}
+
+\vspace{1cm}
+\noindent\textbf{Keywords:} robotic grasping, vMF-Contact, centroid-based constraints, pick-and-place, industrial deployment, collaborative robot, point cloud, uncertainty-aware grasping
+
+\chapter*{Acknowledgements}
+\addcontentsline{toc}{chapter}{Acknowledgements}
+This work was supported by the Deutsche Forschungsgemeinschaft (DFG) under the project SFB-1574 ``Circular Factory for the Future.'' The author thanks the Circular Factory Working Group C for access to the CT-cell infrastructure and the UR10e deployment cell.
+
+\chapter*{Declaration}
+\addcontentsline{toc}{chapter}{Declaration}
+I hereby declare that this thesis is my own original work and that I have not used any sources or aids other than those indicated. All passages taken verbatim or in paraphrase from published or unpublished works have been duly attributed.
+
+\vspace{1.5cm}
+\noindent Karlsruhe, \hspace{3cm} \underline{\hspace{5cm}}\\
+\hspace*{4.5cm} Yimin Hu
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+% ============================================================
+% MAIN MATTER
+% ============================================================
+\pagenumbering{arabic}
+
+% ============================================================
+\chapter{Introduction}
+% ============================================================
+
+\section{Motivation}
+
+In circular manufacturing, returned products arrive with variable geometry, orientation, and positional offset. For a pick-and-place robot operating in this environment, a grasp program calibrated to a single nominal pose fails the moment the object deviates from the assumed configuration --- a deviation that occurs, by design, on every return cycle. The automated guided vehicles (AGVs) that deliver components to the cell operate with positioning tolerances of $\pm$30\,mm or more; the same angle grinder may arrive at a different orientation and position on each inspection pass. Flexible grasping is therefore not an enhancement to the existing workflow. It is a structural requirement of the circular factory paradigm.
+
+\section{Background}
+
+Classical robot grasping programs recover object pose through model-based registration, most commonly iterative closest point (ICP)~\cite{besl1992}. Given a stored CAD model and a scanned point cloud, ICP estimates the rigid transformation that aligns the scan to the stored model, recovering object pose. A robot program then applies the corresponding pre-programmed grasp. This workflow performs reliably under its assumptions: known geometry, consistent surface finish, and placement within the convergence basin of the registration algorithm.
+
+The assumptions do not hold in return-stream scenarios. Objects vary in surface condition across life cycles; geometric deformations from wear or damage push the scan outside the registration basin. More fundamentally, ICP-based pose recovery requires that the object is the known model --- an assumption violated whenever the return stream includes product variants, attachments, or missing components. For environments in which a single, consistent object in a controlled placement is guaranteed, model-based grasping remains practical. For circular manufacturing, it is not.
+
+Learning-based methods replace per-object programming with candidate generation from raw point-cloud data~\cite{tenPas2017, qi2017pointnet, qi2017pointnet2}. Networks trained on large grasping datasets --- GraspNet-1Billion~\cite{fang2020}, Contact-GraspNet~\cite{sundermeyer2021} --- demonstrate generalisation across object classes under laboratory conditions. The gap between laboratory benchmark performance and real industrial deployment, however, remains substantial~\cite{cai2024}. Standard evaluation protocols report isolated grasp success under controlled placement; they do not capture the compounding effects of object weight, hardware-object geometric compatibility, variable sensor viewpoints, and downstream task constraints. For industrial deployment, these factors are not edge cases --- they are operating conditions.
+
+Among recent grasp generation methods, vMF-Contact~\cite{shi2025} represents the current state of the art in uncertainty-aware contact-based grasping. It models grasp candidate distributions using von Mises-Fisher (vMF) distributions over contact normals, encoding both aleatoric uncertainty (sensor noise, occlusion) and epistemic uncertainty (model uncertainty over novel or partially observed objects). On a diverse benchmark of industrial-like objects it reports a 72.7\,\% grasp success rate. Its probabilistic formulation provides a principled basis for ranking candidates when model confidence is low --- a property directly relevant to sparse-viewpoint industrial conditions.
+
+Deploying vMF-Contact on a UR10e collaborative robot tasked with grasping an angle grinder (approximately 2\,kg, elongated asymmetric geometry) for a CT-cell inspection application exposes two limitations not addressed in the original algorithm. First, grasp candidates are generated without spatial reference to the object's centroid: the gripper may close at a geometrically plausible but mechanically insufficient position, too far from the centre of gravity to sustain grip force on a heavy object. Second, no constraint aligns the gripper axis with the object's principal axis. For an asymmetric elongated object, this produces grasps that place the object inverted, corrupting the downstream CT scan orientation. These are systematic omissions for this class of task, not corner cases of the underlying method.
+
+\section{Research Questions}
+
+The primary research question is: to what extent do centroid-based geometric constraints improve the grasping success rate and placement orientation consistency of an angle grinder compared to unconstrained vMF-Contact inference, under the same hardware configuration?
+
+A secondary question examines failure distribution: under which object orientations and positions does the constrained method fail, and through which failure mode?
+
+\section{Contributions}
+
+This thesis makes three contributions.
+
+\textbf{Contribution A --- Centroid-based geometric constraints.} Two parameter-governed constraints are introduced into the vMF-Contact inference pipeline: a gripper zone bound relative to the object's geometric centroid proxy, controlling the annular region within which grasp candidates are accepted, and a gripper-axis alignment constraint with the object's longest principal axis. Together, these confine candidates to positions that are mechanically sufficient and orientationally consistent with the downstream task.
+
+\textbf{Contribution B --- Custom fingertip design.} A replacement fingertip for the Robotiq 2F-140 gripper is designed and fabricated, incorporating a curved contact profile matched to the angle grinder handle cross-section and a silicone friction layer. The design targets grip force insufficiency, the dominant failure mode under the constrained algorithm with the original fingertip. Contribution B is a hardware engineering adaptation to the specific hardware-object pairing of this deployment, distinct from the algorithmic extension of Contribution A. Both adaptations are necessary; their independent necessity is established by the three-condition factorial design.
+
+\textbf{Contribution C --- ROS2 and Docker integration pipeline.} The constrained algorithm is integrated into a reproducible ROS2 pipeline with Docker containerisation, enabling deployment on the UR10e, Orbbec Femto Mega depth camera, and Robotiq 2F-140 gripper cell with minimal environment configuration.
+
+\section{Experimental Overview and Key Results}
+
+Evaluation is conducted across 360 trials structured as a 5-position $\times$ 8-orientation $\times$ 9-repetition matrix under three conditions. Baseline~1 runs unconstrained vMF-Contact inference with the original Robotiq fingertip. Baseline~2 runs the centroid-constrained algorithm with the same fingertip. The Final condition uses the centroid-constrained algorithm with the custom fingertip. This factorial design isolates the software contribution (Baseline~1 versus Baseline~2) from the hardware contribution (Baseline~2 versus Final).
+
+Baseline~1 achieves a success rate below 5\,\%, confirming that unconstrained inference is not viable for the task. Baseline~2 reaches approximately 50\,\%, demonstrating that centroid-based constraints produce a substantial and necessary improvement. The Final condition achieves 80\,\%, demonstrating viability under conditions more demanding than the published vMF-Contact benchmark of 72.7\,\%~\cite{shi2025} --- lower grip force, a heavier object, and a stricter success criterion encompassing the full pick-transport-place sequence.
+
+Learning-based grasping methods achieve strong benchmark performance. Why industrial deployment consistently falls short of these results --- and what adaptations close the gap --- is the central question this thesis addresses.
+
+\section{Thesis Structure}
+
+Chapter~2 traces the development of robotic grasping from model-based registration to uncertainty-aware deep learning, establishing the research gaps this work addresses. Chapter~3 describes the system design and methodology: hardware configuration, centroid-based constraint formulation, fingertip design, and the ROS2 integration pipeline. Chapter~4 presents the experimental protocol, trial matrix, results across all three conditions, and a failure mode analysis. Chapter~5 discusses the implications of these results for algorithm design, hardware selection, and industrial deployment practice. Chapter~6 concludes and identifies directions for future work.
+
+
+% ============================================================
+\chapter{Related Work}
+% ============================================================
+
+\section{Model-Based Grasping}
+
+Model-based grasping programs encode object geometry explicitly. Given a CAD model and a point cloud from a depth sensor, ICP~\cite{besl1992} estimates the rigid transformation that aligns the scan to the stored model, recovering object pose. A robot program then applies the corresponding pre-programmed grasp. This workflow performs reliably under its assumptions: known geometry, consistent surface finish, and placement within the convergence basin of the registration algorithm.
+
+The assumptions restrict the operating envelope. ICP registration requires that the scanned object matches the stored model closely enough to converge; surface wear, geometric deformation, or the presence of attached components push the scan outside the basin. For a fixed production line with a single product variant in a controlled fixture, these conditions are maintainable. For a return stream in which the same product arrives in variable condition, orientation, and position, they are not. No amount of parameter tuning extends ICP to handle object-level variability; the method's fundamental premise is a known, stable geometry. This is the primary motivation for learning-based approaches.
+
+\section{Learning-Based Grasp Generation}
+
+The transition from model-based to learning-based grasping replaces explicit geometry encoding with direct candidate generation from raw point-cloud data. Grasp Pose Detection (GPD)~\cite{tenPas2017} demonstrated that a convolutional network trained on point-cloud patches could evaluate 6-DoF grasp quality without per-object programming. By learning geometric features associated with stable contact rather than matching to a stored model, GPD generalised to novel geometries at test time --- establishing the principle that grasp quality is a learnable function of local surface geometry.
+
+The introduction of PointNet~\cite{qi2017pointnet} provided the architectural foundation that subsequent methods built upon. By operating directly on unordered point sets rather than voxelised or projected representations, PointNet preserved the geometric fidelity of depth sensor output without incurring the resolution loss of discretisation. Its permutation-invariant design --- achieved through symmetric aggregation functions --- handled the unstructured nature of point clouds without preprocessing. PointNet++~\cite{qi2017pointnet2} extended this with hierarchical feature extraction, using set abstraction layers to capture local neighbourhood structure across multiple spatial scales. These two architectures became the standard backbone for point-cloud-based grasp networks, enabling richer surface representations for candidate quality estimation.
+
+At scale, GraspNet-1Billion~\cite{fang2020} established a systematic benchmark: one billion annotated 6-DoF grasp poses across 88 object categories, with real-world evaluation on a subset. The dataset demonstrated that learning-based methods could transfer across object classes --- a qualitative advance over per-object programming --- and provided a standardised protocol for comparing methods. Benchmark success rates above 70\,\% on diverse objects under laboratory conditions became the standard reference point for the field.
+
+Contact-GraspNet~\cite{sundermeyer2021} pushed the state of the art in cluttered scenes by sampling grasp candidates directly from predicted contact points on the object surface, enabling dense candidate generation even under partial occlusion. Its performance in scenes with multiple objects and occluded surfaces represents the practical ceiling of deterministic learning-based methods.
+
+The benchmark environment across all of these works is calibrated for controlled evaluation: consistent lighting, fixed table-top placement within a known volume, objects drawn from a fixed test set. The gap between the benchmark setting and real deployment conditions is not addressed in any of these works, and is not their intended scope. However, the gap is consequential: a method that achieves 70\,\% success on a laboratory test set provides no direct prediction of what success rate it will achieve on a real production cell.
+
+\section{Uncertainty-Aware Grasping and vMF-Contact}
+
+Deterministic grasp generation networks assign a single quality score to each candidate without encoding prediction confidence. For objects well-represented in the training distribution, this is sufficient: the score correlates reliably with physical grasp stability. For novel geometries, partial occlusions, or viewpoints underrepresented in training data, the correlation weakens --- but the network continues to output scores with equal apparent confidence, providing no signal that the prediction is less reliable. A deterministic ranker cannot distinguish between a confident prediction and a guess.
+
+vMF-Contact~\cite{shi2025} addresses this through probabilistic modelling over contact normals. Rather than predicting a single grasp pose, the method models the distribution of contact normals using von Mises-Fisher (vMF) distributions --- a probability distribution over the surface of a unit hypersphere suited to directional data. Grasp candidates are generated by sampling from this distribution, weighted by the estimated probability mass. This formulation captures two qualitatively different sources of prediction uncertainty.
+
+Aleatoric uncertainty arises from the measurement process itself --- sensor noise, reflective surfaces, occlusion --- and is irreducible: additional training data cannot eliminate it because it is a property of the physical sensing environment, not of the model's knowledge. Epistemic uncertainty arises from the model's limited exposure to certain geometries or viewpoints; it is reducible in principle with more training coverage. vMF-Contact encodes both, producing a candidate distribution where low-density regions correspond to low-confidence predictions.
+
+The practical consequence is a ranked candidate set in which confidence is quantified. When an object is presented at an orientation rarely seen during training --- as occurs at several orientations in the 8-orientation evaluation matrix of this thesis --- the predicted distribution is broad and low-density, signalling high epistemic uncertainty. This is consistent with the observed failure mode in which few or no candidates survive post-processing filters at certain orientations (failure mode F2), discussed in Chapter~4. The method does not fail silently in these cases; it fails detectably. That epistemic signal is the most operationally useful feature vMF-Contact contributes over its deterministic predecessors.
+
+Shi et al.~\cite{shi2025} report a 72.7\,\% success rate on a benchmark of diverse objects, evaluated on a Robotiq 2F-85 gripper platform with objects weighing up to approximately 1\,kg. Success is measured as isolated grasp detection: whether the gripper achieves a stable closure on the object. The evaluation does not include object transport, placement accuracy, or downstream task success.
+
+\section{The Industrial Deployment Gap}
+
+Strong benchmark performance has not translated directly into reliable industrial deployment. Cai et al.~\cite{cai2024} identify the simulation-to-real gap as a primary obstacle: depth maps from real sensors carry positional drift and structural deformation that synthetic training data does not represent, degrading point-cloud quality at inference time in ways that are not visible in laboratory evaluations. Their analysis demonstrates that the gap is systematic --- a property of the measurement environment, not a correctable calibration error.
+
+Beyond sensor noise, deployment success is a system-level property. The conditions under which vMF-Contact~\cite{shi2025} achieves its 72.7\,\% benchmark differ from the conditions of this thesis's deployment in three measurable ways. First, the Robotiq 2F-85 gripper used in the benchmark delivers a maximum grip force of 235\,N; the Robotiq 2F-140 used in this thesis, selected for its wider jaw opening to accommodate the angle grinder's geometry, delivers 125\,N --- a 47\,\% reduction. Second, the benchmark objects weigh up to approximately 1\,kg; the angle grinder evaluated here weighs approximately 2\,kg. Third, the benchmark metric is isolated grasp success; the metric used in this thesis is full pick-transport-place success, which compounds grasp stability with trajectory execution and placement accuracy. Each of these differences depresses the expected success rate independently of algorithm quality.
+
+A search of IEEE Xplore and Google Scholar using the terms (\texttt{``UR10'' OR ``UR10e''}) AND (\texttt{``ROS~2'' OR ``ROS2''}) AND (\texttt{``grasping'' OR ``pick-and-place''}) AND (\texttt{``deployment'' OR ``real-world''}) over 2020--2026 returned no peer-reviewed work reporting a structured real-deployment evaluation of a learning-based grasping method on a UR10/UR10e platform in a real industrial cell. To the best of the author's knowledge, no published study has conducted such an evaluation with results stratified across a controlled orientation-and-position trial matrix and a full pick-transport-place success criterion. The absence is informative: the field's evaluation standard does not yet demand what industrial deployment requires.
+
+\section{Research Gaps}
+
+Two gaps emerge from this review.
+
+\textbf{Gap A --- Missing geometric priors in vMF-Contact.} Learning-based grasp generation methods encode local contact geometry but do not encode object-level spatial priors. vMF-Contact generates candidates without constraining (a) the spatial relationship between the grasp point and the object's centroid, or (b) the alignment between the gripper axis and the object's principal axis. For an asymmetric object gripped by a parallel-jaw end-effector, these omissions produce systematic failures: grip force insufficiency when candidates are placed at object extremities far from the centre of gravity, and orientation errors when the gripper closes without axis alignment.
+
+\textbf{Gap B --- Absence of systematic deployment evaluation.} The literature provides isolated grasp benchmarks but not structured deployment studies with failure mode stratification, real hardware-object constraints, and downstream task success as the primary criterion.
+
+This thesis addresses Gap~A through centroid-based geometric constraints added to the vMF-Contact inference pipeline (Contribution~A) and a purpose-designed fingertip that targets the dominant residual failure mode (Contribution~B). It addresses Gap~B through a structured 5-position $\times$ 8-orientation $\times$ 9-repetition deployment evaluation under three experimental conditions on a real UR10e cell (Contribution~C).
+
+
+% ============================================================
+\chapter{System Design and Methodology}
+% ============================================================
+
+\section{System Overview}
+
+The system integrates three hardware components --- a UR10e collaborative robot, an Orbbec Femto Mega RGBD camera, and a Robotiq 2F-140 parallel-jaw gripper --- with a software stack built on ROS2 and containerised using Docker. The complete pipeline runs in five sequential stages: point cloud acquisition, inference through the vMF-Contact algorithm with centroid-based filtering, inverse kinematics and motion planning, robot execution, and result logging.
+
+The centroid-based constraints introduced in this thesis operate as a post-inference filter on the candidate set produced by vMF-Contact: candidates that fail the spatial or axis alignment criteria are discarded before the highest-ranked remaining candidate is passed to the motion planner. The custom fingertip is a hardware modification to the Robotiq 2F-140 that operates independently of the algorithm. Both adaptations target specific, identifiable failure modes observed during baseline deployment, and are evaluated end-to-end in the full pipeline. Their individual contributions are isolated through the three-condition experimental design described in Chapter~4.
+
+This chapter describes each component and the reasoning behind each design decision. Section~3.2 covers the hardware configuration. Section~3.3 describes the perception pipeline. Section~3.4 presents the centroid-based constraint formulation. Section~3.5 describes the custom fingertip design. Section~3.6 describes the ROS2 and Docker integration.
+
+% Figure 3.1 placeholder
+\begin{figure}[htbp]
+  \centering
+  \fbox{\parbox{0.8\textwidth}{\centering\vspace{3cm}
+    \textit{[Figure 3.1: System block diagram --- UR10e, Orbbec Femto Mega, Robotiq 2F-140, ROS2/Docker pipeline, data flow]}
+    \vspace{3cm}}}
+  \caption{System overview. The pipeline proceeds from point cloud acquisition through centroid-filtered vMF-Contact inference, motion planning, and execution.}
+  \label{fig:system_overview}
+\end{figure}
+
+\section{Hardware Configuration}
+
+\textbf{UR10e Collaborative Robot.} The UR10e (Universal Robots, Odense, Denmark) is a 6-axis collaborative robot arm with a 1,300\,mm reach and a 12.5\,kg payload capacity. Its collaborative safety certification (ISO 10218-2) permits operation alongside an AGV delivery system without fixed physical separation. Positioning repeatability under nominal conditions is $\pm$0.05\,mm. The robot is controlled via the ROS2 Universal Robots driver, which exposes a MoveIt~2-compatible action interface for trajectory planning and execution.
+
+\textbf{Orbbec Femto Mega RGBD Camera.} The Orbbec Femto Mega provides structured-light depth sensing at up to 1024 $\times$ 1024 resolution over a depth range of 0.25--9.0\,m, with a nominal depth accuracy of 1--3\,mm within the operating range. The camera is mounted in a fixed eye-to-hand configuration, positioned above and lateral to the workspace to provide consistent coverage of the table surface across all object orientations. The ROS2 OrbbecSDK driver publishes registered point clouds in the camera optical frame; a calibrated static transform to the robot base frame is maintained in the TF2 tree.
+
+\textbf{Robotiq 2F-140 Gripper.} The Robotiq 2F-140 parallel-jaw gripper provides a maximum jaw opening of 140\,mm and a maximum grip force of 125\,N. The 2F-140 was selected over the Robotiq 2F-85 (85\,mm opening, 235\,N grip force) because the angle grinder's handle cross-section requires the wider jaw to achieve full gripper closure; this geometric compatibility requirement comes at the cost of 47\,\% lower maximum grip force, a trade-off that directly motivates the custom fingertip design described in Section~3.5. The gripper communicates with the UR10e controller via Modbus TCP and is commanded from the ROS2 pipeline through a dedicated gripper driver node.
+
+\section{Perception Pipeline}
+
+The Orbbec Femto Mega streams RGBD frames at 10\,Hz. Each depth frame is converted to a point cloud in the camera optical frame and registered to the robot base frame using the calibrated static TF2 transform. The registered cloud is processed through a passthrough filter that restricts the sensing volume to the table surface region ($z$: 0.0--0.5\,m above base, $x$ and $y$: within the AGV delivery area). Point cloud noise is handled implicitly by the geometric centroid proxy computation (Section~3.4.3), which incorporates a bounding-box stabilisation term that reduces sensitivity to sparse boundary noise without a separate outlier removal step.
+
+The filtered point cloud is treated as a single-object scene: no instance segmentation step is applied before inference. This design reflects a constraint of the centroid-based filtering approach. The geometric centroid proxy used in the constraints (Section~3.4) is computed from the full filtered point cloud; in a multi-object scene, this operation would yield a centroid averaged across all objects present, rendering the spatial filter geometrically meaningless. Single-object placement within the delivery zone is therefore a prerequisite of the current implementation. This scope boundary is discussed in Chapter~5.
+
+The preprocessed cloud is passed directly to the vMF-Contact inference module without additional voxelisation or surface normal pre-computation; the network handles these internally.
+
+\section{vMF-Contact Inference and Centroid-Based Constraints}
+
+\subsection{Base Inference}
+
+vMF-Contact~\cite{shi2025} takes the preprocessed point cloud as input and outputs a set of 6-DoF grasp candidates, each encoded as a $4\times4$ homogeneous transformation matrix in the camera frame. Candidates are generated by sampling contact normals from learned von Mises-Fisher distributions over the object surface and constructing gripper approach vectors accordingly. Each candidate carries a confidence score reflecting the probability mass of the underlying distribution at that contact location: high confidence indicates a contact normal consistent with the training distribution; low confidence indicates a contact geometry the model has limited exposure to.
+
+In the unconstrained baseline (Baseline~1), the highest-confidence candidate is passed directly to the motion planner. No spatial or geometric post-processing is applied beyond the network's internal candidate ranking. This is the standard inference procedure as described in~\cite{shi2025}.
+
+\subsection{Grip Force Insufficiency: Problem Formulation}
+
+The angle grinder weighs approximately 2\,kg and has an asymmetric elongated geometry (longest dimension $\sim$320\,mm). Grasps placed at the extremities of the object --- the tool head or the rear handle end --- generate a torque about the gripper contact line proportional to the moment arm between the grasp point and the object's centre of gravity. At the Robotiq 2F-140's maximum grip force of 125\,N, this moment arm exceeds the stable holding threshold when the grasp is placed beyond approximately 50\,mm from the centroid.
+
+The vMF-Contact network assigns candidate confidence based on local surface geometry --- curvature, contact normal direction, antipodal compatibility --- without reference to where on the object the candidate lies relative to its mass distribution. A geometrically valid contact normal at the tool head is assigned the same score basis as one near the handle centre. The base inference pipeline therefore offers no mechanism to preferentially select candidates in the mechanically stable region.
+
+\subsection{Centroid Distance Constraints}
+
+Two distance thresholds are applied to the candidate set following base inference. For each candidate, the Euclidean distance from the proposed grasp point to the object's geometric centroid proxy is computed. Candidates outside the interval $[d_{\min}, d_{\max}]$ are discarded.
+
+The geometric centroid proxy is computed as a weighted sum of two point cloud statistics:
+
+\begin{equation}\label{eq:cog}
+  \hat{c} = 0.2 \cdot c_{\mathrm{obb}} + 0.8 \cdot c_{\mathrm{pcd}}
+\end{equation}
+
+where $\hat{c}$ is the geometric centroid proxy, $c_{\mathrm{obb}}$ is the centre of the object's oriented bounding box, and $c_{\mathrm{pcd}}$ is the centroid of the filtered point cloud. The 0.8 weighting towards the point cloud centroid reflects that the measured surface distribution provides a closer approximation to the object's mass distribution than the bounding box centre for an asymmetric object; the 0.2 bounding box contribution acts as a regulariser, stabilising the estimate against sparse or noisy boundary points where the raw point cloud centroid shifts toward the sensor-visible surface. This weighting was validated against the angle grinder's physical geometry by confirming that the resulting centroid proxy fell consistently within the mechanically stable grip zone across all five object positions. This approximation is a geometric proxy for the centre of gravity, not a physical measurement of it; it is referred to throughout this thesis as the \textit{geometric centroid proxy}.
+
+The threshold values applied in this work are:
+\begin{itemize}
+  \item $d_{\max}$ = \param{grasp\_cog\_dist\_th} = 0.05\,m (outer bound)
+  \item $d_{\min}$ = \param{grasp\_cog\_min\_dist\_th} = 0.03\,m (inner bound)
+\end{itemize}
+
+These define an annular grip zone centred on the centroid proxy. Candidates beyond 0.05\,m are rejected to prevent grip force insufficiency caused by excessive moment arm. Candidates within 0.03\,m are rejected because the gripper jaws cannot physically close at positions coincident with or immediately adjacent to the object's body centre. The threshold values are geometrically motivated: the angle grinder's handle midpoint lies approximately 35\,mm from the centroid proxy, placing it within the $[0.03, 0.05]$\,m annulus. They were validated against the physical geometry of the object and are not the result of optimisation over trial outcomes. Their object-specificity is a stated limitation, discussed in Chapter~5.
+
+% Figure 3.2 placeholder
+\begin{figure}[htbp]
+  \centering
+  \fbox{\parbox{0.8\textwidth}{\centering\vspace{3cm}
+    \textit{[Figure 3.2: Annular grip zone on the angle grinder point cloud. Inner radius $d_{\min}$ = 0.03\,m, outer radius $d_{\max}$ = 0.05\,m, centred on geometric centroid proxy $\hat{c}$.]}
+    \vspace{3cm}}}
+  \caption{Centroid-based annular grip zone (Equation~\ref{eq:cog}). Candidates within the shaded annulus are retained; candidates outside are discarded.}
+  \label{fig:annular_zone}
+\end{figure}
+
+\subsection{Orientation Error: Problem Formulation}
+
+The angle grinder is strongly asymmetric along its principal axis (longest dimension $\sim$320\,mm, transverse dimension $\sim$80\,mm). A grasp that closes the Robotiq 2F-140 perpendicular to the principal axis --- the mechanically correct orientation --- seats the object with its longest dimension parallel to the gripper opening direction. A grasp that closes along the principal axis may seat the object with its head pointing in either direction relative to the approach, producing an inverted placement (failure mode F4).
+
+In practice, an inverted placement does not always cause a complete pick-and-place failure: the gripper may still transport the object successfully, with the error manifesting only at placement, where the object lands in the wrong orientation for the CT scanner. F4 is therefore a downstream task failure rather than a mechanical failure, and its impact on the success metric depends on how strictly placement orientation is enforced in the trial protocol (described in Chapter~4).
+
+A more operationally significant failure mode in the unconstrained pipeline is F3 --- kinematic infeasibility: the robot cannot reach a pose that is otherwise mechanically and orientationally valid, because the required joint configuration falls outside the UR10e's reachable workspace or violates joint limits. F3 failures are independent of the object's geometry or the algorithm's candidate quality; they are a function of the spatial relationship between the candidate pose and the robot's kinematic envelope. The axis alignment constraint (Section~3.4.5) addresses F4; F3 is addressed separately and discussed below.
+
+vMF-Contact assigns equal confidence to contact normals on opposite sides of the object's principal axis. Without an alignment constraint, the selected candidate may produce correct or inverted placement depending on which surface the top-ranked contact falls on, with no algorithm-level signal that the orientation is inconsistent.
+
+\subsection{Axis Alignment Constraint and Reachability}
+
+A third filter enforces alignment between the gripper closing axis ($y$-axis in the gripper frame, projected into the object frame) and the object's principal axis. The principal axis is the eigenvector corresponding to the largest eigenvalue of the point cloud covariance matrix. For each surviving candidate, the dot product between the projected gripper $y$-axis and the principal axis is computed; candidates below the threshold \param{cog\_axis\_projection\_th} are discarded.
+
+Following all three filters, the remaining candidates are ranked by the original vMF-Contact confidence scores and the top-ranked candidate is passed to the motion planner. If no candidates survive --- failure mode F2 --- the system reports a no-valid-pose failure without executing.
+
+\textbf{Reachability filter (future work).} The three-filter cascade --- centroid distance inner bound, centroid distance outer bound, and axis projection --- constrains candidates to positions that are mechanically sufficient and orientationally consistent, addressing failure modes F1 and F4. It does not evaluate whether the selected candidate is kinematically reachable by the UR10e before committing to execution. A candidate that satisfies all three filters may still produce an F3 failure if the corresponding robot configuration falls outside the reachable workspace or violates joint limits. A fourth filter that evaluates kinematic reachability prior to final candidate selection --- pre-emptively discarding unreachable poses and selecting the next viable candidate --- is implemented in the development branch of the vMF-Contact fork used in this thesis but was not incorporated in time for the controlled experiments reported in Chapter~4. Its evaluation is identified as a direction for future work (Chapter~6).
+
+\section{Custom Fingertip Design}
+
+The centroid-based constraints raise the success rate from below 5\,\% to approximately 50\,\% (Baseline~2). Failure analysis of the remaining unsuccessful trials identifies grip force insufficiency (F1) as the dominant residual failure mode: the gripper closes on a valid candidate within the centroid zone but releases the object during transport. The standard Robotiq flat fingertip contacts the angle grinder's cylindrical handle geometry at a single line of contact, producing minimal friction area and a correspondingly low effective holding force relative to the object's weight.
+
+The custom fingertip increases effective contact area through two design features. A curved contact surface, with a radius of curvature matched to the handle's cross-section ($\sim$20\,mm), converts the line contact of the flat fingertip to a surface contact, distributing grip force over a wider arc. A silicone friction layer (Shore~A~40 hardness, 2\,mm thickness) is bonded to the curved surface; under grip force, the silicone conforms to surface irregularities on the handle, further increasing effective contact area and friction coefficient. Together, these features raise the grip-to-weight margin at the same actuator force setting, without requiring any modification to the gripper controller or force parameters.
+
+The fingertip improvement is method-agnostic: it applies regardless of which algorithm generates the grasp candidate, provided the candidate is placed on the handle region. It is presented here as a necessary response to the hardware-object mismatch identified at Baseline~2, not as a contribution specific to vMF-Contact or to learning-based grasping. The contribution of the thesis is the combined system --- constrained algorithm plus adapted hardware --- evaluated end-to-end. The fingertip demonstrates that deployment engineering requires hardware-object compatibility work that algorithm benchmarks do not surface.
+
+Fingertip bodies were fabricated by fused deposition modelling (FDM) in PETG. Silicone was cast directly into a recessed channel in the contact face of each body. The completed fingertips replace the standard pads on both jaws of the Robotiq 2F-140 without modification to the gripper's mechanical interface.
+
+% Figure 3.3 placeholder
+\begin{figure}[htbp]
+  \centering
+  \fbox{\parbox{0.8\textwidth}{\centering\vspace{3cm}
+    \textit{[Figure 3.3: Custom fingertip design drawing (left) and installed configuration on the Robotiq 2F-140 (right). Curved contact surface ($r \approx 20$\,mm) and silicone friction layer visible.]}
+    \vspace{3cm}}}
+  \caption{Custom fingertip. Left: design drawing. Right: installed on the Robotiq 2F-140.}
+  \label{fig:fingertip}
+\end{figure}
+
+\section{ROS2 and Docker Integration Pipeline}
+
+The software stack runs on ROS2 Humble (Ubuntu 22.04) and is structured as four Docker containers managed by Docker Compose: perception (Orbbec ROS2 driver), inference (vMF-Contact, GPU-accelerated), motion planning (MoveIt~2 with UR10e model), and robot control (UR ROS2 driver). Containerisation isolates the Python and CUDA dependencies of the inference module from the system ROS2 packages, enabling consistent deployment across development workstations and the production cell from a single \texttt{docker compose up} invocation with pinned image versions.
+
+Containers communicate over ROS2's DDS middleware (FastDDS) on a shared host network namespace, maintaining ROS2 node discovery without inter-container bridging. The perception container publishes the filtered point cloud; the inference container subscribes, runs inference and constraint filtering, and publishes the selected grasp pose in the robot base frame; the motion planning container computes a collision-aware trajectory using the UR10e URDF; the robot control container executes the trajectory and reports execution status. A logging node, co-located in the inference container, records per-trial metadata for each attempt: candidate count before and after filtering, selected candidate confidence score, failure mode classification (F1--F4 or success), and trial outcome.
+
+The total pipeline latency from point cloud acquisition to robot motion onset is 3--5\,seconds under nominal conditions, dominated by vMF-Contact inference and MoveIt~2 trajectory planning. End-to-end cycle time --- from point cloud acquisition through robot motion completion and return to the home position --- is approximately \textbf{[ENTER FROM LOGS: total cycle time in seconds]\,seconds}. This is acceptable for the CT-cell's operational throughput of one part per inspection cycle. Higher-throughput applications would require inference optimisation (e.g., model quantisation or TensorRT conversion) or pipelined execution of inference and planning.
+
+The complete pipeline is available at: \url{https://github.com/SFB-Circular-Factory-WG-C/docker_vmf_ur10e}
+
+
+% ============================================================
+\chapter{Experimental Setup and Results}
+% ============================================================
+
+\section{Experimental Protocol}
+
+\subsection{Trial Matrix}
+\label{sec:trial_matrix}
+
+The evaluation is structured as a $5 \times 8 \times 9$ factorial matrix: five object positions, eight object orientations, and nine repetitions per cell, yielding 360 trials per experimental condition. All trials are conducted on the UR10e + Orbbec Femto Mega + Robotiq 2F-140 cell described in Chapter~3 under three conditions:
+
+\begin{itemize}
+  \item \textbf{Baseline~1:} vMF-Contact inference without centroid-based constraints, with the original Robotiq flat fingertip.
+  \item \textbf{Baseline~2:} vMF-Contact inference with centroid-based constraints (\param{grasp\_cog\_dist\_th} = 0.05\,m, \param{grasp\_cog\_min\_dist\_th} = 0.03\,m, axis projection filter), with the original Robotiq flat fingertip.
+  \item \textbf{Final:} vMF-Contact inference with centroid-based constraints, with the custom curved silicone fingertip.
+\end{itemize}
+
+Baseline~1 versus Baseline~2 isolates the software contribution, holding hardware constant. Baseline~2 versus Final isolates the hardware contribution, holding the algorithm constant. This factorial structure ensures that each contribution is attributable to a single changed variable.
+
+Statistical inference is conducted at the condition level (360 trials per condition); cell-level success rates (9 repetitions per position-orientation cell) carry a 95\,\% confidence interval width of approximately $\pm$26 percentage points and should be interpreted as descriptive rather than inferential.
+
+\subsection{Object Positions and Orientations}
+
+The five object positions (P1--P5) span the AGV delivery zone reachable by the UR10e, distributed to cover the range of expected delivery offsets encountered in the circular factory cell. The eight orientations (O1--O8) sample the angle grinder's rotational space at approximately 45$^\circ$ intervals around the vertical axis, probing the full range of top-down approach angles available to the parallel-jaw gripper. These orientations include configurations in which the tool head faces toward and away from the robot, and intermediate diagonal angles. They were selected without exclusion of orientations suspected to be kinematically difficult, to ensure that the reported success rates reflect realistic deployment conditions rather than a curated subset.
+
+For each (position, orientation) cell, the angle grinder is manually placed to the target configuration before each of the nine repetitions by the experimenter. This ensures that each repetition reflects an independent sensing and inference cycle rather than repeated planning on a fixed input.
+
+\subsection{Success Criterion}
+
+A trial is recorded as a success if and only if the angle grinder is lifted from the delivery position and transported to the CT scanner placement zone without being dropped, with the handle axis within $\pm$20$^\circ$ of the target direction at placement. Trials in which the gripper closes but the object is released during transport (F1), in which no valid candidate is selected after filtering (F2), in which the motion planner does not find a feasible trajectory within the planning time budget (F3), or in which the object arrives at the placement zone with an inverted or out-of-tolerance orientation (F4) are recorded as failures and classified by failure mode. All 360 trials per condition are included in the reported success rate; no trials are excluded after data collection.
+
+\section{Results by Condition}
+
+\subsection{Condition Success Rates}
+
+Table~\ref{tab:success_rates} summarises the overall success rates for each condition across all 360 trials.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Overall success rates per condition (360 trials each). Enter exact success counts from experimental logs.}
+  \label{tab:success_rates}
+  \begin{tabular}{llllr}
+    \toprule
+    Condition & Algorithm & Fingertip & Successes & Rate \\
+    \midrule
+    Baseline~1 & vMF-Contact (unconstrained) & Robotiq original (flat) & {[}LOGS{]} / 360 & $<$5\,\% \\
+    Baseline~2 & vMF-Contact + CoG constraints & Robotiq original (flat) & {[}LOGS{]} / 360 & $\sim$50\,\% \\
+    Final       & vMF-Contact + CoG constraints & Custom silicone          & {[}LOGS{]} / 360 & 80\,\% \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+All three pairwise differences between conditions are statistically significant. $\chi^2$ tests of proportions ($df = 1$) yield: Baseline~1 vs.\ Baseline~2: $\chi^2 = \text{[LOGS]}$, $p < 0.001$; Baseline~2 vs.\ Final: $\chi^2 = \text{[LOGS]}$, $p < 0.001$; Baseline~1 vs.\ Final: $\chi^2 = \text{[LOGS]}$, $p < 0.001$. Using the confirmed approximate rates (5\,\%, 50\,\%, 80\,\%) as working estimates yields $\chi^2$ values of $\approx$183, $\approx$71, and $\approx$414 respectively, each far exceeding the $\chi^2(1)$ critical value of 10.83 at $\alpha = 0.001$. Exact test statistics should be computed from the final logged trial counts and substituted before submission.
+
+\subsection{Factorial Decomposition}
+
+The Baseline~1 success rate below 5\,\% establishes that unconstrained vMF-Contact inference is not viable for this deployment. The algorithm generates geometrically plausible candidates that are mechanically or orientationally incompatible with the task at the large majority of tested conditions. F1 (grip force failure) dominates, with F4 (orientation error) as a secondary contributor; no F2 failures occur in Baseline~1 because no filter is present to produce them.
+
+The transition from Baseline~1 to Baseline~2 --- an improvement of approximately 45 percentage points --- represents the software contribution. Centroid-based constraints filter out candidates at object extremities and enforce axis alignment, directly addressing both dominant Baseline~1 failure modes. This improvement is attributable entirely to the algorithmic modification; hardware is held constant.
+
+The transition from Baseline~2 to Final --- an improvement of approximately 30 percentage points --- represents the hardware contribution. The custom fingertip increases effective contact area and friction on the angle grinder handle, recovering grip failures on candidates that are algorithmically valid but mechanically marginal with the flat fingertip. This improvement is attributable entirely to the hardware modification; the algorithm is held constant.
+
+Both contributions are independently load-bearing. The Baseline~2 result ($\sim$50\,\%) is insufficient for reliable industrial operation; the algorithmic contribution alone does not solve the deployment problem. A hypothetical hardware-only deployment --- custom fingertip without centroid constraints --- was not evaluated; the hardware contribution measured here (Baseline~2 to Final, $\sim$30 percentage points) is therefore conditional on the centroid-based constraints being active. Whether the custom fingertip alone would produce a comparable improvement in the unconstrained setting is uncharacterised and cannot be concluded from the present data.
+
+\subsection{Benchmark Comparison}
+
+The Final condition result of 80\,\% demonstrates viability under conditions more demanding than those of the vMF-Contact benchmark~\cite{shi2025} along three independently measurable axes: (1)~the Robotiq 2F-140 grip force (125\,N) is 47\,\% lower than the 2F-85 (235\,N) used in the benchmark; (2)~the angle grinder ($\sim$2\,kg) is approximately twice the weight of benchmark objects; and (3)~the success criterion encompasses the full pick-transport-place sequence, whereas the benchmark measures isolated grasp detection. Each factor independently depresses the achievable success rate relative to the benchmark setting. That the Final condition achieves 80\,\% despite these three compounding disadvantages indicates that the centroid-based constraints and custom fingertip are sufficient to maintain above-benchmark performance even under substantially harder deployment conditions --- not that the adapted system is intrinsically superior to the base algorithm on the benchmark task itself.
+
+\section{Failure Mode Analysis}
+
+\subsection{Failure Mode Definitions}
+
+Four failure modes are defined:
+
+\begin{itemize}
+  \item \textbf{F1 (Grip force failure):} The gripper closes and the trajectory executes, but the object is released during transport. Detected by force-torque monitoring on the UR10e controller.
+  \item \textbf{F2 (No valid pose):} All candidates are rejected by the centroid-based constraints; no grasp is executed. Reported by the inference node.
+  \item \textbf{F3 (Kinematic infeasibility):} A valid candidate is selected, but the MoveIt~2 planner fails to find a collision-free trajectory within the planning time budget. Reported by the planning node.
+  \item \textbf{F4 (Orientation error):} The pick-and-place sequence completes without a drop, but the object is placed at an incorrect orientation. Detected by visual inspection at the placement zone.
+\end{itemize}
+
+\subsection{Failure Distribution by Condition}
+
+Table~\ref{tab:failure_modes} reports the failure mode distribution per condition. The F4 count in Baseline~1 is particularly relevant to interpreting the B1$\rightarrow$B2 improvement: if F4 failures are few, the dominant driver of the $\sim$45 percentage point improvement is the centroid distance constraint (addressing F1) rather than the axis alignment filter (addressing F4).
+
+\begin{table}[htbp]
+  \centering
+  \caption{Failure mode counts per condition (360 trials each). Enter counts from experimental logs.}
+  \label{tab:failure_modes}
+  \begin{tabular}{lrrrrr}
+    \toprule
+    Condition & F1 (grip) & F2 (no pose) & F3 (kinematic) & F4 (orient.) & Success \\
+    \midrule
+    Baseline~1 & {[}LOGS{]} & 0 & {[}LOGS{]} & {[}LOGS{]} & {[}LOGS{]} \\
+    Baseline~2 & {[}LOGS{]} & {[}LOGS{]} & {[}LOGS{]} & {[}LOGS{]} & {[}LOGS{]} \\
+    Final       & {[}LOGS{]} & {[}LOGS{]} & {[}LOGS{]} & {[}LOGS{]} & {[}LOGS{]} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\textbf{Baseline~1.} F1 dominates: candidates placed at object extremities generate insufficient grip force, resulting in release during transport. F4 accounts for a secondary fraction. F2 does not occur (no filter is active). F3 occurs at a rate determined by workspace geometry and is consistent across all three conditions.
+
+\textbf{Baseline~2.} F1 is substantially reduced. Centroid constraints concentrate candidate selection in the mechanically stable handle region, eliminating the majority of Baseline~1 grip failures. Residual F1 occurs where the flat fingertip fails to maintain grip on a valid candidate. F2 appears at a small number of cells. F4 is reduced by the axis alignment filter. F3 is unchanged.
+
+\textbf{Final.} F1 is further reduced by the custom fingertip. Residual F1 is concentrated at orientations with low candidate counts. F4 frequency is similar to Baseline~2 --- the fingertip modification does not affect orientation compliance. F2 and F3 rates are unchanged.
+
+\subsection{F2: Practical Recovery}
+
+F2 failures (no valid candidate after filtering) occur at a small number of position-orientation cells. These cells are concentrated at specific object positions where partial occlusion or sensor noise degrades point cloud coverage at the handle region, reducing the number of contact candidates that survive the CoG distance filter. In all observed F2 cases, a minor object repositioning resolved the failure in a subsequent attempt. F2 failures are recorded as failures in the trial protocol, with no repositioning permitted between delivery and execution. In a production deployment, a lightweight position retry heuristic would recover the majority of these cases at negligible operational cost.
+
+\section{Orientation and Position Sensitivity}
+
+The 8-orientation matrix reveals structured failure patterns. Three clusters emerge from per-orientation success rate analysis in the Final condition.
+
+\textbf{F3 cluster.} A subset of orientations produces consistently elevated F3 rates across all conditions and positions (see Table~\ref{tab:orientation_clusters}). These orientations require joint configurations at or near the UR10e's joint limits, or Cartesian approach directions that intersect the workspace boundary. F3 failures at these orientations are not attributable to the algorithm or the fingertip --- they reflect the robot's kinematic envelope, and are unchanged whether Baseline~1, Baseline~2, or the Final condition is active. They are included in the full-matrix success rate denominator, as they represent real failure conditions in the deployment. For reference, the success rate over kinematically-feasible orientations only --- excluding cells dominated by F3 --- is \textbf{[LOGS]\,\%} in the Final condition, compared to 80\,\% over the full matrix. The pre-emptive reachability filter described in Section~3.4.5 is the appropriate solution to this cluster and is identified as future work.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Orientation cluster classification (O1--O8). Enter cluster assignments and per-orientation F3 rates from experimental logs.}
+  \label{tab:orientation_clusters}
+  \begin{tabular}{llll}
+    \toprule
+    Orientation & Cluster & Dominant failure mode & Notes \\
+    \midrule
+    O1 & {[}LOGS{]} & {[}LOGS{]} & \\
+    O2 & {[}LOGS{]} & {[}LOGS{]} & \\
+    O3 & {[}LOGS{]} & {[}LOGS{]} & \\
+    O4 & {[}LOGS{]} & {[}LOGS{]} & \\
+    O5 & {[}LOGS{]} & {[}LOGS{]} & \\
+    O6 & {[}LOGS{]} & {[}LOGS{]} & \\
+    O7 & {[}LOGS{]} & {[}LOGS{]} & \\
+    O8 & {[}LOGS{]} & {[}LOGS{]} & \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\textbf{Low-confidence / F1 cluster.} A second cluster of orientations produces elevated F1 rates in both Baseline~2 and the Final condition. These orientations yield few surviving candidates after CoG filtering --- typically one to two candidates, compared to five to ten at well-represented orientations. The sparse candidate set is consistent with high epistemic uncertainty: the vMF-Contact model has limited training coverage of these viewpoints, producing a broad, low-density distribution that generates few high-confidence candidates within the centroid zone. The system selects the best available candidate from a small, low-confidence pool; this candidate is more likely to fall on a marginal contact position where even the custom silicone fingertip does not provide reliable grip. The custom fingertip reduces the F1 rate at these orientations relative to Baseline~2, but does not eliminate it. Orientation sensitivity therefore persists into the Final condition as a residual effect of model coverage, rather than of hardware or constraint design.
+
+\textbf{Normal cluster.} The remaining orientations produce success rates at or above the overall Final condition rate of 80\,\%. At these orientations, the model generates five or more centroid-filtered candidates with sufficient confidence, the top-ranked candidate lies on the handle in the stable contact zone, and the custom fingertip provides reliable grip.
+
+Position effects are secondary to orientation effects. Success rate variation across the five positions within any given orientation is small relative to the inter-orientation variation. Position primarily influences F2 incidence (Section~4.3.3); it has no measurable effect on F3 or on the F1 cluster pattern.
+
+\section{Summary}
+
+Three conclusions follow from the experimental results.
+
+First, centroid-based geometric constraints are necessary. Unconstrained inference (Baseline~1, $<$5\,\%) is not viable for this deployment task; F1 and F4 failures are systematic and frequent. The constraints raise performance to approximately 50\,\% (Baseline~2), confirming that the identified failure modes are addressable through principled algorithmic modification and that the effect is large.
+
+Second, hardware adaptation is equally necessary. Baseline~2 ($\sim$50\,\%) does not meet the threshold for reliable industrial operation. The custom fingertip raises performance to 80\,\% (Final), demonstrating that hardware-object compatibility is a load-bearing factor independent of algorithm quality. Neither adaptation is sufficient alone; the combined system is required.
+
+Third, the 80\,\% Final result demonstrates viability under conditions more demanding than the published vMF-Contact benchmark of 72.7\,\%~\cite{shi2025}, despite three systematic deployment disadvantages. The residual failure modes (F3 workspace limits, epistemic uncertainty at specific orientations, occasional F2) identify the remaining improvement levers and are examined in Chapter~5.
+
+
+% ============================================================
+\chapter{Discussion}
+% ============================================================
+
+\section{Interpreting the Three-Condition Results}
+
+The three-condition design produces two independent effect measurements with clear attribution. The Baseline~1 to Baseline~2 transition --- from below 5\,\% to approximately 50\,\% --- quantifies the software contribution of centroid-based constraints, with hardware held constant. The Baseline~2 to Final transition --- from approximately 50\,\% to 80\,\% --- quantifies the hardware contribution of the custom fingertip, with the algorithm held constant. Both effect sizes are large and unambiguous; neither contribution is marginal.
+
+The magnitude of the Baseline~1 result deserves emphasis. A success rate below 5\,\% on 360 trials means the unconstrained algorithm succeeds at this task in fewer than one in twenty attempts. This is not a moderate performance deficit --- it is a near-complete failure of the base method in this deployment context. The vMF-Contact algorithm, which achieves 72.7\,\% on a controlled benchmark~\cite{shi2025}, is effectively unusable without adaptation. The two centroid-based constraints address a principled omission in the original algorithm --- the absence of object-level spatial priors --- rather than compensating for incidental environmental factors.
+
+The Baseline~2 result ($\sim$50\,\%) identifies an equally important finding: a system that selects mechanically valid, correctly oriented candidates half the time still fails half the time, because the gripper cannot sustain grip through transport. Algorithmic improvement is necessary but not sufficient. The custom fingertip addresses a hardware-object mismatch that no modification to the inference pipeline can resolve. The combined system (Final, 80\,\%) demonstrates that both dimensions of the deployment problem must be addressed independently.
+
+The 80\,\% Final result demonstrates viability under conditions more demanding than the Shi et al.~\cite{shi2025} benchmark along three independently measurable axes: lower grip force (125\,N versus 235\,N), a heavier object ($\sim$2\,kg versus $\sim$1\,kg), and a stricter success criterion encompassing the full pick-transport-place sequence. The benchmark conditions are more favourable along every axis. That the deployment result maintains performance above the benchmark rate under these compounding disadvantages confirms that the specific adaptations are sufficient to sustain performance despite the deployment handicap. This is not a claim that the adapted system is intrinsically superior to the base algorithm on diverse objects under controlled conditions; it is evidence that the adaptations are correctly targeted at the specific factors that would otherwise suppress performance below the benchmark in this deployment context.
+
+\section{Failure Mode Analysis: Causes and Implications}
+
+Understanding the causes of residual failures in the Final condition is more useful for guiding future work than the top-line success rate.
+
+\textbf{Epistemic uncertainty and the low-confidence orientation cluster.} The orientation-dependent F1 cluster identified in Chapter~4 (Section~4.4) reflects the epistemic uncertainty property of the vMF-Contact model discussed in Chapter~2. At orientations underrepresented in the training distribution, the model produces a broad, low-density vMF distribution: few contact candidates fall within the centroid zone, and those that do carry low model confidence. The system selects the highest-ranked surviving candidate, but this candidate is disproportionately likely to fall at the boundary of the mechanically stable grip zone, where the silicone fingertip provides insufficient friction to hold a 2\,kg object through a full transport trajectory.
+
+The failure sequence --- high epistemic uncertainty $\rightarrow$ sparse centroid-filtered candidates $\rightarrow$ boundary contact selection $\rightarrow$ F1 --- validates the theoretical motivation for probabilistic uncertainty modelling introduced in Chapter~2. It also identifies the appropriate intervention. A confidence-weighted candidate selection strategy --- one that penalises candidates with low model confidence even when they satisfy the spatial filters --- would preferentially avoid marginal contact positions at low-coverage orientations. Alternatively, orientation pre-screening at delivery time, biasing AGV placement toward orientations with known high coverage, would reduce exposure to the low-confidence cluster without any algorithm modification.
+
+\textbf{F3 kinematic infeasibility.} F3 failures at specific orientations reflect the UR10e workspace boundary, not algorithm or hardware behaviour. The appropriate solution is a pre-execution reachability check that discards kinematically infeasible candidates before final selection, rather than discovering infeasibility at planning time. A prototype implementation is available in the development branch of the vMF-Contact fork (Section~3.4.5). Integrating and validating this filter on the current trial matrix is the most direct path to reducing F3 failures and improving the full-matrix success rate beyond 80\,\%.
+
+\textbf{F2 positional sensitivity.} F2 failures are few, position-sensitive, and operationally recoverable. In all observed cases, a minor repositioning of the object resolved the failure in a subsequent attempt. A position retry heuristic in the delivery placement protocol, or a feedback signal from the inference node to the AGV controller, would address the majority of F2 cases at negligible cost.
+
+\section{Deployment Evaluation as a Research Contribution}
+
+The structured deployment evaluation contributes methodologically, independently of the algorithm and hardware adaptations. The three-condition design --- 1,080 trials, two isolated factorial comparisons, failure mode stratification across a position $\times$ orientation matrix --- illustrates how the gap between laboratory benchmark performance and real industrial deployment can be characterised and decomposed.
+
+The existing evaluation paradigm for grasping methods reports isolated grasp success under controlled conditions: calibrated placement, clean point clouds, success measured at gripper closure. This protocol is well-suited for comparing methods under reproducible conditions; it is not designed to characterise deployment performance. Deployment success is a system-level property. It compounds hardware-object compatibility, sensor noise from real environments, kinematic constraints of the specific robot platform, and downstream task requirements. None of these factors appears in isolated grasp benchmarks. The gap between 72.7\,\% (benchmark) and less than 5\,\% (this deployment without adaptation) is not attributable to any single factor --- it is the compound product of missing geometric priors, hardware-object force mismatch, and a stricter success criterion operating together.
+
+The Baseline~1 result demonstrates that published benchmark performance does not transfer to a real deployment without adaptation. Baseline~2 and Final progressively close the gap by addressing one factor at a time, with each addressed factor producing a large, measurable improvement. This structure --- systematic decomposition of a benchmark-to-deployment gap into independently attributable factors --- constitutes one structured case study in how learning-based grasping methods require characterisation before industrial deployment, as a complement to, rather than a replacement for, laboratory benchmarks. Establishing whether this evaluation template generalises across object classes, gripper types, and deployment contexts is itself a direction for future work; the present study provides a single, carefully executed case study rather than a general methodology.
+
+\section{Limitations}
+
+\textbf{Object-specificity of CoG parameters.} The centroid distance thresholds (\param{grasp\_cog\_dist\_th} = 0.05\,m, \param{grasp\_cog\_min\_dist\_th} = 0.03\,m) and axis projection tolerance are calibrated to the angle grinder's geometry. Extending the system to a second class requires repeating the parameter validation procedure. Whether a unified parameter set generalises across a family of elongated asymmetric objects remains an open question.
+
+\textbf{Single-object scene requirement.} The centroid proxy is computed from the full filtered point cloud without instance segmentation. In a multi-object scene, the computed centroid averages across all objects present, making the spatial filter geometrically undefined. The system therefore requires single-object placement in the delivery zone. This is a constraint of the CoG approach, not of vMF-Contact itself; the base algorithm handles cluttered multi-object scenes through contact-normal sampling. Introducing an instance segmentation module --- a PointNet++~\cite{qi2017pointnet2} segmentation head or a dedicated 3D instance segmentation network --- would restore multi-object capability while preserving the CoG constraint logic, and is the most direct path to extending the current system to cluttered scenes.
+
+\textbf{Residual F3 failures.} The F3 failure cluster at specific orientations is unaddressed in the current experimental system. These failures are a function of the UR10e workspace geometry; they are present at identical rates across all three conditions. The pre-emptive reachability filter (Section~3.4.5) is the appropriate solution but was not validated in time for the reported trials. Until integrated, the system's reliable operating envelope excludes the F3 cluster orientations, even though they are correctly included in the full-matrix success rate.
+
+\textbf{Model coverage at specific orientations.} The epistemic uncertainty cluster identifies orientations at which the vMF-Contact model has limited training coverage of the angle grinder. This cannot be resolved through the constraint modifications alone. Additional training data at underrepresented viewpoints, or a confidence-weighted selection policy, would address the residual F1 failures in this cluster.
+
+\textbf{Gripper selection trade-off.} The Robotiq 2F-140 was chosen for geometric compatibility with the angle grinder handle at the cost of a 47\,\% reduction in grip force relative to the 2F-85 (125\,N versus 235\,N). The custom fingertip partially compensates for this, but does not restore grip force to 2F-85 levels. A gripper offering both wide jaw opening and higher force would likely improve performance further while preserving geometric compatibility.
+
+\textbf{Absence of the hardware-only baseline.} The experimental design does not include a condition evaluating the custom fingertip without centroid constraints. As a consequence, the hardware contribution measured here (Baseline~2 to Final, $\sim$30 percentage points) is conditional on the algorithm being active --- specifically, on the centroid constraints directing candidate selection to the handle region where the fingertip's contact geometry is effective. Whether the fingertip provides comparable improvement in the unconstrained setting (where candidates may be selected at object extremities) is unknown. The observed hardware effect should be interpreted as the fingertip's contribution given that algorithmic constraints are in place, not as an unconditional hardware improvement.
+
+\section{Deployment Recommendations}
+
+The results and limitations define a specific operating envelope. The current system is suited to some industrial contexts and not others, and the boundary between them follows directly from the failure mode analysis.
+
+\textbf{Suitable contexts.} The system is well-matched to circular factory return streams: single objects of a known class delivered by AGV at variable position and orientation, moderate throughput compatible with a 3--5\,second pipeline latency, and an operational tolerance for an 80\,\% success rate with a retry path for failed attempts. In the current cell, F1 failures (object dropped mid-trajectory) are detected via force-torque threshold monitoring on the UR10e controller; a drop event triggers a return-to-home sequence and logs the failure for operator review. F2 and F3 failures are reported by the inference and planning nodes respectively without executing motion. This detection infrastructure is a prerequisite for any retry loop; deployments without it cannot safely implement automated retry. The broader class of circular manufacturing scenarios shares the cell's operating properties and fits the system's envelope for the same reasons.
+
+\textbf{Unsuitable contexts.} High-takt automated assembly lines are outside the current operating envelope: the inference-and-planning latency is incompatible with short cycle times, and a single F3 or F1 failure interrupts the line. Multi-object cluttered scenes require an instance segmentation module before the CoG constraints become applicable. Safety-critical applications requiring reliability above 95\,\% would need the F3 reachability filter, epistemic uncertainty mitigation, and additional validation before deployment. Novel object geometries require re-parameterisation of the CoG thresholds and fingertip contact validation --- the current parameters are specific to the angle grinder and should not be applied to other object classes without verification.
+
+Each unsuitability is addressable through specific, tractable future work. None is intrinsic to the approach. The system is a validated starting point for industrial learning-based grasping; closing the remaining performance gaps is a matter of engineering effort rather than fundamental research.
+
+
+% ============================================================
+\chapter{Conclusion}
+% ============================================================
+
+\section{Summary}
+
+This thesis asked: to what extent do centroid-based geometric constraints improve the grasping success rate and placement orientation consistency of an angle grinder compared to unconstrained vMF-Contact inference, under the same hardware configuration?
+
+The answer is unambiguous. Unconstrained vMF-Contact inference achieves a success rate below 5\,\% on the $5 \times 8 \times 9$ trial matrix. Centroid-based constraints raise this to approximately 50\,\%. The addition of a custom curved silicone fingertip raises it further to 80\,\%. The improvement from constraints alone --- approximately 45 percentage points --- demonstrates that the algorithmic adaptation is both necessary and effective. The further improvement from the fingertip --- approximately 30 percentage points --- demonstrates that hardware-object compatibility is an independent, load-bearing factor that no algorithm modification can substitute for.
+
+Three contributions realise these results. Contribution~A introduces two parameter-governed centroid-based constraints into the vMF-Contact inference pipeline: an annular grip zone defined relative to the object's geometric centroid proxy, and a gripper-axis alignment constraint with the object's principal axis. These address grip force insufficiency and orientation error --- the two dominant failure modes of unconstrained inference on this task --- through principled geometric constraints rather than post-hoc filtering. Contribution~B is a custom fingertip for the Robotiq 2F-140, incorporating a curved contact surface matched to the angle grinder handle and a silicone friction layer, which addresses the grip force insufficiency that persists after algorithmic correction. Contribution~C is the ROS2 and Docker integration pipeline that enables reproducible deployment of the full system on the UR10e cell.
+
+The Final condition result of 80\,\% demonstrates viability under conditions more demanding than the published vMF-Contact benchmark of 72.7\,\%~\cite{shi2025} --- lower grip force, a heavier object, and a stricter success criterion --- confirming that the targeted adaptations are sufficient to maintain above-benchmark performance despite the deployment disadvantage. Both adaptations are necessary; neither is sufficient alone.
+
+\section{Research Gaps Addressed}
+
+\textbf{Gap A --- Missing geometric priors.} Prior learning-based grasping methods, including vMF-Contact, encode local contact geometry but not object-level spatial relationships. The centroid-based constraints introduced in Contribution~A directly address this omission. The Baseline~1 to Baseline~2 result provides quantitative evidence that these priors are necessary for this task class: without them, the algorithm fails on nearly every trial.
+
+\textbf{Gap B --- Absence of systematic deployment evaluation.} Prior work provides benchmark comparisons but not structured deployment studies with failure mode stratification, real hardware-object constraints, and a full pick-transport-place success criterion. The 1,080-trial evaluation across three conditions, eight orientations, and five positions fills this gap for the specific deployment studied here. The failure mode analysis demonstrates what this style of evaluation reveals that isolated benchmarks do not: the specific conditions under which a validated method succeeds and fails in a real industrial cell.
+
+\section{Future Work}
+
+Four directions follow directly from the limitations identified in Chapter~5.
+
+\textbf{Kinematic reachability filter.} F3 failures at specific orientations are the most directly addressable residual failure mode. A prototype filter that evaluates kinematic feasibility before candidate selection --- discarding unreachable poses prior to motion planning --- is implemented in the development branch of the vMF-Contact fork used in this thesis. Integrating and validating this filter on the current trial matrix is the most immediate path to improving the full-matrix success rate beyond 80\,\%, without changes to the algorithm or hardware.
+
+\textbf{Confidence-weighted candidate selection.} The epistemic uncertainty failure cluster --- orientations at which the model generates few low-confidence candidates, producing elevated F1 rates --- is addressable through a selection policy that penalises low-confidence candidates even when they satisfy the spatial filters. A confidence threshold on surviving candidates, or an explicit preference for candidates with probability mass above a learned coverage threshold, would reduce the probability of selecting marginal contact positions at underrepresented orientations.
+
+\textbf{Instance segmentation for multi-object scenes.} The current system requires single-object placement because the centroid proxy is computed from the full point cloud. Adding an instance segmentation module --- a PointNet++~\cite{qi2017pointnet2} segmentation head or a dedicated 3D network --- would restore the ability to handle cluttered multi-object scenes while preserving the CoG constraint logic. This is the primary architectural extension required to broaden the system's applicability beyond single-object delivery zones.
+
+\textbf{Parameter generalisation.} The centroid distance and axis projection thresholds are calibrated to the angle grinder's geometry. Validating whether a common parameter set applies across a family of elongated asymmetric objects, or deriving the thresholds analytically from measurable object properties (handle length, centroid offset, gripper jaw width), would reduce the per-class calibration overhead and extend the system's practical range.
+
+\section{Closing}
+
+Learning-based grasping methods achieve strong benchmark performance. The central finding of this thesis is an answer to why industrial deployment consistently falls short: algorithms encode no object-level geometric priors, hardware-object compatibility is absent from evaluation protocols, and benchmark success criteria measure a narrow proxy for the system-level outcome that deployment requires.
+
+The adaptations introduced here --- centroid-based constraints and a purpose-designed fingertip --- are not patches on a broken method. They are the minimum necessary engineering to connect a laboratory-validated algorithm to a specific deployment context. That connection required understanding what the algorithm could not do, why the hardware was insufficient, and how to measure both in a way that separates their contributions. The result --- 80\,\% success on a task the base algorithm failed at below 5\,\% --- is evidence that the gap between benchmark and deployment is structured and closeable, not random and irreducible. Closing it systematically, across object classes and deployment contexts, is the work that remains.
+
+
+% ============================================================
+% BIBLIOGRAPHY
+% ============================================================
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}
