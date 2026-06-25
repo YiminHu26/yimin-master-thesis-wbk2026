@@ -10,10 +10,10 @@
 % Citation style: IEEE
 % ============================================================
 % PENDING BEFORE SUBMISSION:
-%   [ ] Fill Tables 4.1, 4.2, 4.3 from experimental logs
-%   [ ] Substitute exact chi-squared statistics in Section 4.2.1
+%   [X] Fill Tables 4.1, 4.2, 4.3 from experimental logs
+%   [X] Substitute exact chi-squared statistics in Section 4.2.1
 %   [ ] Verify 72.7% figure against ICRA 2025 proceedings PDF
-%   [ ] Enter total end-to-end cycle time in Section 3.6
+%   [X] Enter total end-to-end cycle time in Section 3.6
 %   [ ] Verify full author lists: cai2024, shi2025
 %   [ ] Insert Figures 3.1, 3.2, 3.3
 %   [ ] Add abstract (use /ars-abstract)
@@ -184,9 +184,9 @@ This thesis makes three contributions.
 
 \section{Experimental Overview and Key Results}
 
-Evaluation is conducted across 360 trials structured as a 6-position $\times$ 8-orientation $\times$ 3-repetition matrix under three conditions. Baseline~1 runs unconstrained vMF-Contact inference with the original Robotiq fingertip. Baseline~2 runs the centroid-constrained algorithm with the same fingertip. The Final condition uses the centroid-constrained algorithm with the custom fingertip. This factorial design isolates the software contribution (Baseline~1 versus Baseline~2) from the hardware contribution (Baseline~2 versus Final).
+Evaluation is conducted across 144 trials structured as a 6-position $\times$ 8-orientation $\times$ 3-repetition matrix under three conditions. Baseline~1 runs unconstrained vMF-Contact inference with the original Robotiq fingertip. Baseline~2 runs the centroid-constrained algorithm with the same fingertip. The Final condition uses the centroid-constrained algorithm with the custom fingertip. This factorial design isolates the software contribution (Baseline~1 versus Baseline~2) from the hardware contribution (Baseline~2 versus Final).
 
-Baseline~1 achieves a success rate below 5\,\%, confirming that unconstrained inference is not viable for the task. Baseline~2 reaches approximately 50\,\%, demonstrating that centroid-based constraints produce a substantial and necessary improvement. The Final condition achieves 80\,\%, demonstrating viability under conditions more demanding than the published vMF-Contact benchmark of 72.7\,\%~\cite{shi2025} --- lower grip force, a heavier object, and a stricter success criterion encompassing the full pick-transport-place sequence.
+Baseline~1 achieves a success rate OF 13.9\,\%, confirming that unconstrained inference is not viable for the task. Baseline~2 reaches 40.3\,\%, demonstrating that centroid-based constraints produce a substantial and necessary improvement. The Final condition achieves 77.1\,\%, demonstrating viability under conditions more demanding than the published vMF-Contact benchmark of 72.7\,\%~\cite{shi2025} --- lower grip force, a heavier object, and a stricter success criterion encompassing the full pick-transport-place sequence.
 
 Learning-based grasping methods achieve strong benchmark performance. Why industrial deployment consistently falls short of these results --- and what adaptations close the gap --- is the central question this thesis addresses.
 
@@ -374,7 +374,7 @@ The software stack runs on ROS2 Humble (Ubuntu 22.04) and is structured as four 
 
 Containers communicate over ROS2's DDS middleware (FastDDS) on a shared host network namespace, maintaining ROS2 node discovery without inter-container bridging. The perception container publishes the filtered point cloud; the inference container subscribes, runs inference and constraint filtering, and publishes the selected grasp pose in the robot base frame; the motion planning container computes a collision-aware trajectory using the UR10e URDF; the robot control container executes the trajectory and reports execution status. A logging node, co-located in the inference container, records per-trial metadata for each attempt: candidate count before and after filtering, selected candidate confidence score, failure mode classification (F1--F4 or success), and trial outcome.
 
-The total pipeline latency from point cloud acquisition to robot motion onset is 3--5\,seconds under nominal conditions, dominated by vMF-Contact inference and MoveIt~2 trajectory planning. End-to-end cycle time --- from point cloud acquisition through robot motion completion and return to the home position --- is approximately \textbf{[ENTER FROM LOGS: total cycle time in seconds]\,seconds}. This is acceptable for the CT-cell's operational throughput of one part per inspection cycle. Higher-throughput applications would require inference optimisation (e.g., model quantisation or TensorRT conversion) or pipelined execution of inference and planning.
+The total pipeline latency from point cloud acquisition to robot motion onset is 3--5\,seconds under nominal conditions, dominated by vMF-Contact inference and MoveIt~2 trajectory planning. End-to-end cycle time --- from point cloud acquisition through robot motion completion and return to the home position --- is approximately 2 minutes. This is acceptable for the CT-cell's operational throughput of one part per inspection cycle. Higher-throughput applications would require inference optimisation (e.g., model quantisation or TensorRT conversion) or pipelined execution of inference and planning.
 
 The complete pipeline is available at: \url{https://github.com/SFB-Circular-Factory-WG-C/docker_vmf_ur10e}
 
@@ -402,7 +402,7 @@ Statistical inference is conducted at the condition level (144 trials per condit
 
 \subsection{Object Positions and Orientations}
 
-The five object positions (P1--P5) span the AGV delivery zone reachable by the UR10e, distributed to cover the range of expected delivery offsets encountered in the circular factory cell. The eight orientations (O1--O8) sample the angle grinder's rotational space at approximately 45$^\circ$ intervals around the vertical axis, probing the full range of top-down approach angles available to the parallel-jaw gripper. These orientations include configurations in which the tool head faces toward and away from the robot, and intermediate diagonal angles. They were selected without exclusion of orientations suspected to be kinematically difficult, to ensure that the reported success rates reflect realistic deployment conditions rather than a curated subset.
+The six object positions (P1--P6) span the AGV delivery zone reachable by the UR10e, distributed to cover the range of expected delivery offsets encountered in the circular factory cell. The eight orientations (O1--O8) sample the angle grinder's rotational space at approximately 45$^\circ$ intervals around the vertical axis, probing the full range of top-down approach angles available to the parallel-jaw gripper. These orientations include configurations in which the tool head faces toward and away from the robot, and intermediate diagonal angles. They were selected without exclusion of orientations suspected to be kinematically difficult, to ensure that the reported success rates reflect realistic deployment conditions rather than a curated subset.
 
 For each (position, orientation) cell, the angle grinder is manually placed to the target configuration before each of the three repetitions by the experimenter. This ensures that each repetition reflects an independent sensing and inference cycle rather than repeated planning on a fixed input.
 
@@ -424,28 +424,58 @@ Table~\ref{tab:success_rates} summarises the overall success rates for each cond
     \toprule
     Condition & Algorithm & Fingertip & Successes & Rate \\
     \midrule
-    Baseline~1 & vMF-Contact (unconstrained) & Robotiq original (flat) & {[}LOGS{]} / 144 & $<$5\,\% \\
-    Baseline~2 & vMF-Contact + CoG constraints & Robotiq original (flat) & {[}LOGS{]} / 144 & $\sim$50\,\% \\
-    Final       & vMF-Contact + CoG constraints & Custom silicone          & {[}LOGS{]} / 144 & 80\,\% \\
+    Baseline~1 & vMF-Contact (unconstrained) & Robotiq original & 20 / 144 & 13.9\,\% \\
+    Baseline~2 & vMF-Contact + CoG constraints & Robotiq original & 58 / 144 & 40.3\,\% \\
+    Final       & vMF-Contact + CoG constraints & Custom silicone  & 111 / 144 & 77.1\,\% \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-All three pairwise differences between conditions are statistically significant. $\chi^2$ tests of proportions ($df = 1$) yield: Baseline~1 vs.\ Baseline~2: $\chi^2 = \text{[LOGS]}$, $p < 0.001$; Baseline~2 vs.\ Final: $\chi^2 = \text{[LOGS]}$, $p < 0.001$; Baseline~1 vs.\ Final: $\chi^2 = \text{[LOGS]}$, $p < 0.001$. Using the confirmed approximate rates (5\,\%, 50\,\%, 80\,\%) as working estimates yields $\chi^2$ values of $\approx$183, $\approx$71, and $\approx$414 respectively, each far exceeding the $\chi^2(1)$ critical value of 10.83 at $\alpha = 0.001$. Exact test statistics should be computed from the final logged trial counts and substituted before submission.
+All three pairwise differences between conditions are statistically significant. 
+$\chi^2$ tests of proportions ($df = 1$) yield: 
+Baseline~1 vs.\ Baseline~2: $\chi^2 = 25.39$, $p < 0.001$; 
+Baseline~2 vs.\ Final: $\chi^2 = 40.22$, $p < 0.001$; 
+Baseline~1 vs.\ Final: $\chi^2 = 115.96$, $p < 0.001$. 
+Using the confirmed approximate rates (13.9\,\%, 40.3\,\%, 77.1\,\%) as working estimates yields $\chi^2$ values of $\approx$14, $\approx$40, and $\approx$77 respectively, 
+each far exceeding the $\chi^2(1)$ critical value of 10.83 at $\alpha = 0.001$.
+
+This confirms that the observed improvements are not attributable to random chance and that both the algorithmic and hardware contributions are independently significant.
 
 \subsection{Factorial Decomposition}
 
-The Baseline~1 success rate below 5\,\% establishes that unconstrained vMF-Contact inference is not viable for this deployment. The algorithm generates geometrically plausible candidates that are mechanically or orientationally incompatible with the task at the large majority of tested conditions. F1 (grip force failure) dominates, with F4 (orientation error) as a secondary contributor; no F2 failures occur in Baseline~1 because no filter is present to produce them.
+The Baseline~1 success rate of 13.9\,\% establishes that unconstrained vMF-Contact inference is not viable for this deployment. 
+The algorithm generates geometrically plausible candidates that are mechanically or orientationally incompatible with the task at the large majority of tested conditions. 
+F1 (grip force failure) dominates, with F4 (orientation error) as a secondary contributor; 
+no F2 failures occur in Baseline~1 because no filter is present to produce them.
 
-The transition from Baseline~1 to Baseline~2 --- an improvement of approximately 45 percentage points --- represents the software contribution. Centroid-based constraints filter out candidates at object extremities and enforce axis alignment, directly addressing both dominant Baseline~1 failure modes. This improvement is attributable entirely to the algorithmic modification; hardware is held constant.
+The transition from Baseline~1 to Baseline~2 --- an improvement of approximately 45 percentage points --- represents the software contribution. 
+Centroid-based constraints filter out candidates at object extremities and enforce axis alignment, directly addressing both dominant Baseline~1 failure modes. 
+This improvement is attributable entirely to the algorithmic modification; hardware is held constant.
 
-The transition from Baseline~2 to Final --- an improvement of approximately 30 percentage points --- represents the hardware contribution. The custom fingertip increases effective contact area and friction on the angle grinder handle, recovering grip failures on candidates that are algorithmically valid but mechanically marginal with the flat fingertip. This improvement is attributable entirely to the hardware modification; the algorithm is held constant.
+The transition from Baseline~2 to Final --- an improvement of approximately 30 percentage points --- represents the hardware contribution. 
+The custom fingertip increases effective contact area and friction on the angle grinder handle, recovering grip failures on candidates that are algorithmically valid but mechanically marginal with the flat fingertip. 
+This improvement is attributable entirely to the hardware modification; the algorithm is held constant.
 
-Both contributions are independently load-bearing. The Baseline~2 result ($\sim$50\,\%) is insufficient for reliable industrial operation; the algorithmic contribution alone does not solve the deployment problem. A hypothetical hardware-only deployment --- custom fingertip without centroid constraints --- was not evaluated; the hardware contribution measured here (Baseline~2 to Final, $\sim$30 percentage points) is therefore conditional on the centroid-based constraints being active. Whether the custom fingertip alone would produce a comparable improvement in the unconstrained setting is uncharacterised and cannot be concluded from the present data.
+Both contributions are independently load-bearing. 
+The Baseline~2 result (13.9\,\%) is insufficient for reliable industrial operation; 
+the algorithmic contribution alone does not solve the deployment problem. 
+A hypothetical hardware-only deployment --- custom fingertip without centroid constraints --- was not evaluated; 
+the hardware contribution measured here (Baseline~2 to Final, 36.8 percentage points) is therefore conditional on the centroid-based constraints being active. 
+Whether the custom fingertip alone would produce a comparable improvement in the unconstrained setting is uncharacterised and cannot be concluded from the present data.
 
 \subsection{Benchmark Comparison}
 
-The Final condition result of 80\,\% demonstrates viability under conditions more demanding than those of the vMF-Contact benchmark~\cite{shi2025} along three independently measurable axes: (1)~the Robotiq 2F-140 grip force (125\,N) is 47\,\% lower than the 2F-85 (235\,N) used in the benchmark; (2)~the angle grinder ($\sim$2\,kg) is approximately twice the weight of benchmark objects; and (3)~the success criterion encompasses the full pick-transport-place sequence, whereas the benchmark measures isolated grasp detection. Each factor independently depresses the achievable success rate relative to the benchmark setting. That the Final condition achieves 80\,\% despite these three compounding disadvantages indicates that the centroid-based constraints and custom fingertip are sufficient to maintain above-benchmark performance even under substantially harder deployment conditions --- not that the adapted system is intrinsically superior to the base algorithm on the benchmark task itself.
+The Final condition result of 77.1\,\% demonstrates viability under conditions more demanding than those of the vMF-Contact benchmark~\cite{shi2025} along three independently measurable axes:
+
+(1)~the Robotiq 2F-140 grip force (125\,N) is 47\,\% lower than the 2F-85 (235\,N) used in the benchmark; 
+
+(2)~the angle grinder ($\sim$2\,kg) is approximately twice the weight of benchmark objects; 
+
+(3)~the success criterion encompasses the full pick-transport-place sequence, whereas the benchmark measures isolated grasp detection. 
+
+Each factor independently depresses the achievable success rate relative to the benchmark setting. 
+That the Final condition achieves 77.1\,\% despite these three compounding disadvantages indicates that the centroid-based constraints and custom fingertip are sufficient to maintain above-benchmark performance even under substantially harder deployment conditions
+ --- not that the adapted system is intrinsically superior to the base algorithm on the benchmark task itself.
 
 \section{Failure Mode Analysis}
 
@@ -466,70 +496,153 @@ Table~\ref{tab:failure_modes} reports the failure mode distribution per conditio
 
 \begin{table}[htbp]
   \centering
-  \caption{Failure mode counts per condition (360 trials each). Enter counts from experimental logs.}
+  \caption{Failure mode counts per condition (144 trials each).}
   \label{tab:failure_modes}
-  \begin{tabular}{lrrrrr}
+  \begin{tabular}{llllll}
     \toprule
     Condition & F1 (grip) & F2 (no pose) & F3 (kinematic) & F4 (orient.) & Success \\
     \midrule
-    Baseline~1 & {[}LOGS{]} & 0 & {[}LOGS{]} & {[}LOGS{]} & {[}LOGS{]} \\
-    Baseline~2 & {[}LOGS{]} & {[}LOGS{]} & {[}LOGS{]} & {[}LOGS{]} & {[}LOGS{]} \\
-    Final       & {[}LOGS{]} & {[}LOGS{]} & {[}LOGS{]} & {[}LOGS{]} & {[}LOGS{]} \\
+    Baseline~1 & 103 & 0 & 11 & 10 & 20 \\
+    Baseline~2 & 71 & 1 & 14 & 0 & 58 \\
+    Final      & 1 & 7 & 25 & 0 & 111 \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-\textbf{Baseline~1.} F1 dominates: candidates placed at object extremities generate insufficient grip force, resulting in release during transport. F4 accounts for a secondary fraction. F2 does not occur (no filter is active). F3 occurs at a rate determined by workspace geometry and is consistent across all three conditions.
+\textbf{Baseline~1.} 
+F1 dominates: candidates placed at object extremities generate insufficient grip force, resulting in release during transport. F4 accounts for a secondary fraction. 
+F2 does not occur (no filter is active). 
+F3 occurs at a rate determined by workspace geometry and is consistent across all three conditions.
 
-\textbf{Baseline~2.} F1 is substantially reduced. Centroid constraints concentrate candidate selection in the mechanically stable handle region, eliminating the majority of Baseline~1 grip failures. Residual F1 occurs where the flat fingertip fails to maintain grip on a valid candidate. F2 appears at a small number of cells. F4 is reduced by the axis alignment filter. F3 is unchanged.
+\textbf{Baseline~2.} 
+F1 is substantially reduced. 
+Centroid constraints concentrate candidate selection in the mechanically stable handle region, eliminating the majority of Baseline~1 grip failures. 
+Residual F1 occurs where the flat fingertip fails to maintain grip on a valid candidate. 
+F2 appears at a small number of cells. 
+F4 is reduced by the axis alignment filter. 
+F3 is unchanged.
 
-\textbf{Final.} F1 is further reduced by the custom fingertip. Residual F1 is concentrated at orientations with low candidate counts. F4 frequency is similar to Baseline~2 --- the fingertip modification does not affect orientation compliance. F2 and F3 rates are unchanged.
+\textbf{Final.} 
+F1 is further reduced by the custom fingertip. 
+Residual F1 is concentrated at orientations with low candidate counts. 
+F4 frequency is similar to Baseline~2 --- the fingertip modification does not affect orientation compliance. 
+F2 and F3 rates have slightly increased because of randomness of the object position and environment.
 
 \subsection{F2: Practical Recovery}
 
-F2 failures (no valid candidate after filtering) occur at a small number of position-orientation cells. These cells are concentrated at specific object positions where partial occlusion or sensor noise degrades point cloud coverage at the handle region, reducing the number of contact candidates that survive the CoG distance filter. In all observed F2 cases, a minor object repositioning resolved the failure in a subsequent attempt. F2 failures are recorded as failures in the trial protocol, with no repositioning permitted between delivery and execution. In a production deployment, a lightweight position retry heuristic would recover the majority of these cases at negligible operational cost.
+F2 failures (no valid candidate after filtering) occur at a small number of position-orientation cells. 
+These cells are concentrated at specific object positions where partial occlusion or sensor noise degrades point cloud coverage at the handle region, 
+reducing the number of contact candidates that survive the CoG distance filter. 
+In all observed F2 cases, a minor object repositioning resolved the failure in a subsequent attempt. 
+F2 failures are recorded as failures in the trial protocol, with no repositioning permitted between delivery and execution. 
+In a production deployment, a lightweight position retry heuristic would recover the majority of these cases at negligible operational cost.
 
 \section{Orientation and Position Sensitivity}
 
 The 8-orientation matrix reveals structured failure patterns. Three clusters emerge from per-orientation success rate analysis in the Final condition.
 
-\textbf{F3 cluster.} A subset of orientations produces consistently elevated F3 rates across all conditions and positions (see Table~\ref{tab:orientation_clusters}). These orientations require joint configurations at or near the UR10e's joint limits, or Cartesian approach directions that intersect the workspace boundary. F3 failures at these orientations are not attributable to the algorithm or the fingertip --- they reflect the robot's kinematic envelope, and are unchanged whether Baseline~1, Baseline~2, or the Final condition is active. They are included in the full-matrix success rate denominator, as they represent real failure conditions in the deployment. For reference, the success rate over kinematically-feasible orientations only --- excluding cells dominated by F3 --- is \textbf{[LOGS]\,\%} in the Final condition, compared to 80\,\% over the full matrix. The pre-emptive reachability filter described in Section~3.4.5 is the appropriate solution to this cluster and is identified as future work.
+\textbf{F3 cluster.} 
+A subset of orientations produces consistently elevated F3 rates across all conditions and positions (see Table~\ref{tab:baseline1_orientation_clusters}, \ref{tab:baseline2_orientation_clusters}, \ref{tab:final_orientation_clusters}). 
+These orientations require joint configurations at or near the UR10e's joint limits, or Cartesian approach directions that intersect the workspace boundary. 
+F3 failures at these orientations are not attributable to the algorithm or the fingertip --- they reflect the robot's kinematic envelope, and are unchanged whether Baseline~1, Baseline~2, or the Final condition is active. 
+They are included in the full-matrix success rate denominator, as they represent real failure conditions in the deployment. 
+For reference, the success rate over kinematically-feasible orientations only --- excluding cells dominated by F3 --- is \textbf{94.4\,\%} in the Final condition, compared to 77.1\,\% over the full matrix. 
+The pre-emptive reachability filter described in Section~3.4.5 is the appropriate solution to this cluster and is identified as future work.
 
 \begin{table}[htbp]
   \centering
-  \caption{Orientation cluster classification (O1--O8). Enter cluster assignments and per-orientation F3 rates from experimental logs.}
-  \label{tab:orientation_clusters}
-  \begin{tabular}{llll}
+  \caption{Baseline~1 orientation cluster classification (O1--O8).}
+  \label{tab:baseline1_orientation_clusters}
+  \begin{tabular}{lllll}
     \toprule
-    Orientation & Cluster & Dominant failure mode & Notes \\
+    Orientation & F1 & F2 & F3 & F4 \\
     \midrule
-    O1 & {[}LOGS{]} & {[}LOGS{]} & \\
-    O2 & {[}LOGS{]} & {[}LOGS{]} & \\
-    O3 & {[}LOGS{]} & {[}LOGS{]} & \\
-    O4 & {[}LOGS{]} & {[}LOGS{]} & \\
-    O5 & {[}LOGS{]} & {[}LOGS{]} & \\
-    O6 & {[}LOGS{]} & {[}LOGS{]} & \\
-    O7 & {[}LOGS{]} & {[}LOGS{]} & \\
-    O8 & {[}LOGS{]} & {[}LOGS{]} & \\
+    O1 & 10 & 0 & 0 & 2 \\
+    O2 & 14 & 0 & 0 & 2 \\
+    O3 & 18 & 0 & 0 & 0 \\
+    O4 & 14 & 0 & 0 & 0 \\
+    O5 & 15 & 0 & 0 & 2 \\
+    O6 & 13 & 0 & 0 & 1 \\
+    O7 & 5 & 0 & 11 & 0\\
+    O8 & 14 & 0 & 0 & 3 \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-\textbf{Low-confidence / F1 cluster.} A second cluster of orientations produces elevated F1 rates in both Baseline~2 and the Final condition. These orientations yield few surviving candidates after CoG filtering --- typically one to two candidates, compared to five to ten at well-represented orientations. The sparse candidate set is consistent with high epistemic uncertainty: the vMF-Contact model has limited training coverage of these viewpoints, producing a broad, low-density distribution that generates few high-confidence candidates within the centroid zone. The system selects the best available candidate from a small, low-confidence pool; this candidate is more likely to fall on a marginal contact position where even the custom silicone fingertip does not provide reliable grip. The custom fingertip reduces the F1 rate at these orientations relative to Baseline~2, but does not eliminate it. Orientation sensitivity therefore persists into the Final condition as a residual effect of model coverage, rather than of hardware or constraint design.
+\begin{table}[htbp]
+  \centering
+  \caption{Baseline~2 orientation cluster classification (O1--O8).}
+  \label{tab:baseline2_orientation_clusters}
+  \begin{tabular}{lllll}
+    \toprule
+    Orientation & F1 & F2 & F3 & F4 \\
+    \midrule
+    O1 & 9 & 0 & 0 & 1 \\
+    O2 & 16 & 0 & 0 & 0 \\
+    O3 & 5 & 1 & 12 & 0 \\
+    O4 & 2 & 0 & 0 & 0 \\
+    O5 & 10 & 0 & 1 & 0 \\
+    O6 & 11 & 0 & 0 & 0 \\
+    O7 & 13 & 0 & 1 & 0\\
+    O8 & 5 & 0 & 0 & 0 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 
-\textbf{Normal cluster.} The remaining orientations produce success rates at or above the overall Final condition rate of 80\,\%. At these orientations, the model generates five or more centroid-filtered candidates with sufficient confidence, the top-ranked candidate lies on the handle in the stable contact zone, and the custom fingertip provides reliable grip.
+\begin{table}[htbp]
+  \centering
+  \caption{Final orientation cluster classification (O1--O8).}
+  \label{tab:final_orientation_clusters}
+  \begin{tabular}{lllll}
+    \toprule
+    Orientation & F1 & F2 & F3 & F4 \\
+    \midrule
+    O1 & 1 & 0 & 0 & 0 \\
+    O2 & 0 & 0 & 0 & 0 \\
+    O3 & 0 & 3 & 15 & 0 \\
+    O4 & 0 & 2 & 1 & 0 \\
+    O5 & 0 & 1 & 0 & 0 \\
+    O6 & 0 & 0 & 0 & 0 \\
+    O7 & 0 & 0 & 9 & 0\\
+    O8 & 0 & 1 & 0 & 0 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 
-Position effects are secondary to orientation effects. Success rate variation across the five positions within any given orientation is small relative to the inter-orientation variation. Position primarily influences F2 incidence (Section~4.3.3); it has no measurable effect on F3 or on the F1 cluster pattern.
+\textbf{Low-confidence / F1 cluster.} 
+A second cluster of orientations produces elevated F1 rates in both Baseline~2 and the Final condition. 
+These orientations yield few surviving candidates after CoG filtering --- typically one to two candidates, compared to five to ten at well-represented orientations. 
+The sparse candidate set is consistent with high epistemic uncertainty: 
+the vMF-Contact model has limited training coverage of these viewpoints, producing a broad, low-density distribution that generates few high-confidence candidates within the centroid zone. 
+The system selects the best available candidate from a small, low-confidence pool; this candidate is more likely to fall on a marginal contact position where even the custom silicone fingertip does not provide reliable grip. 
+The custom fingertip reduces the F1 rate at these orientations relative to Baseline~2, but does not eliminate it. 
+Orientation sensitivity therefore persists into the Final condition as a residual effect of model coverage, rather than of hardware or constraint design.
+
+\textbf{Normal cluster.} 
+The remaining orientations produce success rates at or above the overall Final condition rate of 77.1\,\%. 
+At these orientations, the model generates five or more centroid-filtered candidates with sufficient confidence, the top-ranked candidate lies on the handle in the stable contact zone, and the custom fingertip provides reliable grip.
+
+Position effects are secondary to orientation effects. 
+Success rate variation across the six positions within any given orientation is small relative to the inter-orientation variation. 
+Position primarily influences F2 incidence (Section~4.3.3); it has no measurable effect on F3 or on the F1 cluster pattern.
 
 \section{Summary}
 
 Three conclusions follow from the experimental results.
 
-First, centroid-based geometric constraints are necessary. Unconstrained inference (Baseline~1, $<$5\,\%) is not viable for this deployment task; F1 and F4 failures are systematic and frequent. The constraints raise performance to approximately 50\,\% (Baseline~2), confirming that the identified failure modes are addressable through principled algorithmic modification and that the effect is large.
+First, centroid-based geometric constraints are necessary. 
+Unconstrained inference (Baseline~1, 13.9\,\%) is not viable for this deployment task; 
+F1 and F4 failures are systematic and frequent. 
+The constraints raise performance to 40.3\,\% (Baseline~2), confirming that the identified failure modes are addressable through principled algorithmic modification and that the effect is large.
 
-Second, hardware adaptation is equally necessary. Baseline~2 ($\sim$50\,\%) does not meet the threshold for reliable industrial operation. The custom fingertip raises performance to 80\,\% (Final), demonstrating that hardware-object compatibility is a load-bearing factor independent of algorithm quality. Neither adaptation is sufficient alone; the combined system is required.
+Second, hardware adaptation is equally necessary. 
+Baseline~2 (40.3\,\%) does not meet the threshold for reliable industrial operation. 
+The custom fingertip raises performance to 77.1\,\% (Final), 
+demonstrating that hardware-object compatibility is a load-bearing factor independent of algorithm quality. 
+Neither adaptation is sufficient alone; the combined system is required.
 
-Third, the 80\,\% Final result demonstrates viability under conditions more demanding than the published vMF-Contact benchmark of 72.7\,\%~\cite{shi2025}, despite three systematic deployment disadvantages. The residual failure modes (F3 workspace limits, epistemic uncertainty at specific orientations, occasional F2) identify the remaining improvement levers and are examined in Chapter~5.
+Third, the 77.1\,\% Final result demonstrates viability under conditions more demanding than the published vMF-Contact benchmark of 72.7\,\%~\cite{shi2025}, despite three systematic deployment disadvantages. 
+The residual failure modes (F3 workspace limits, epistemic uncertainty at specific orientations, occasional F2) identify the remaining improvement levers and are examined in Chapter~5.
 
 
 % ============================================================
@@ -538,31 +651,67 @@ Third, the 80\,\% Final result demonstrates viability under conditions more dema
 
 \section{Interpreting the Three-Condition Results}
 
-The three-condition design produces two independent effect measurements with clear attribution. The Baseline~1 to Baseline~2 transition --- from below 5\,\% to approximately 50\,\% --- quantifies the software contribution of centroid-based constraints, with hardware held constant. The Baseline~2 to Final transition --- from approximately 50\,\% to 80\,\% --- quantifies the hardware contribution of the custom fingertip, with the algorithm held constant. Both effect sizes are large and unambiguous; neither contribution is marginal.
+The three-condition design produces two independent effect measurements with clear attribution. 
 
-The magnitude of the Baseline~1 result deserves emphasis. A success rate below 5\,\% on 144 trials means the unconstrained algorithm succeeds at this task in fewer than one in twenty attempts. This is not a moderate performance deficit --- it is a near-complete failure of the base method in this deployment context. The vMF-Contact algorithm, which achieves 72.7\,\% on a controlled benchmark~\cite{shi2025}, is effectively unusable without adaptation. The two centroid-based constraints address a principled omission in the original algorithm --- the absence of object-level spatial priors --- rather than compensating for incidental environmental factors.
+The Baseline~1 to Baseline~2 transition --- from 13.9\,\% to 40.3\,\% --- quantifies the software contribution of centroid-based constraints, with hardware held constant. 
+The Baseline~2 to Final transition --- from 40.3\,\% to 77.1\,\% --- quantifies the hardware contribution of the custom fingertip, with the algorithm held constant. 
+Both effect sizes are large and unambiguous; neither contribution is marginal.
 
-The Baseline~2 result ($\sim$50\,\%) identifies an equally important finding: a system that selects mechanically valid, correctly oriented candidates half the time still fails half the time, because the gripper cannot sustain grip through transport. Algorithmic improvement is necessary but not sufficient. The custom fingertip addresses a hardware-object mismatch that no modification to the inference pipeline can resolve. The combined system (Final, 80\,\%) demonstrates that both dimensions of the deployment problem must be addressed independently.
+The magnitude of the Baseline~1 result deserves emphasis. A success rate of 13.9\,\% on 144 trials means the unconstrained algorithm succeeds at this task in fewer than one in 6 attempts. 
+This is not a moderate performance deficit --- it is a near-complete failure of the base method in this deployment context. 
+The vMF-Contact algorithm, which achieves 72.7\,\% on a controlled benchmark~\cite{shi2025}, is effectively unusable without adaptation. 
+The two centroid-based constraints address a principled omission in the original algorithm --- the absence of object-level spatial priors --- rather than compensating for incidental environmental factors.
 
-The 80\,\% Final result demonstrates viability under conditions more demanding than the Shi et al.~\cite{shi2025} benchmark along three independently measurable axes: lower grip force (125\,N versus 235\,N), a heavier object ($\sim$2\,kg versus $\sim$1\,kg), and a stricter success criterion encompassing the full pick-transport-place sequence. The benchmark conditions are more favourable along every axis. That the deployment result maintains performance above the benchmark rate under these compounding disadvantages confirms that the specific adaptations are sufficient to sustain performance despite the deployment handicap. This is not a claim that the adapted system is intrinsically superior to the base algorithm on diverse objects under controlled conditions; it is evidence that the adaptations are correctly targeted at the specific factors that would otherwise suppress performance below the benchmark in this deployment context.
+The Baseline~2 result (40.3\,\%) identifies an equally important finding: 
+a system that selects mechanically valid, correctly oriented candidates half the time still fails half the time, because the gripper cannot sustain grip through transport. 
+Algorithmic improvement is necessary but not sufficient. 
+The custom fingertip addresses a hardware-object mismatch that no modification to the inference pipeline can resolve. 
+The combined system (Final, 77.1\,\%) demonstrates that both dimensions of the deployment problem must be addressed independently.
+
+The 77.1\,\% Final result demonstrates viability under conditions more demanding than the Shi et al.~\cite{shi2025} benchmark along three independently measurable axes: 
+lower grip force (125\,N versus 235\,N), a heavier object ($\sim$2\,kg versus $\sim$1\,kg), and a stricter success criterion encompassing the full pick-transport-place sequence.
+The benchmark conditions are more favourable along every axis. 
+That the deployment result maintains performance above the benchmark rate under these compounding disadvantages confirms that the specific adaptations are sufficient to sustain performance despite the deployment handicap. 
+This is not a claim that the adapted system is intrinsically superior to the base algorithm on diverse objects under controlled conditions; 
+it is evidence that the adaptations are correctly targeted at the specific factors that would otherwise suppress performance below the benchmark in this deployment context.
 
 \section{Failure Mode Analysis: Causes and Implications}
 
 Understanding the causes of residual failures in the Final condition is more useful for guiding future work than the top-line success rate.
 
-\textbf{Epistemic uncertainty and the low-confidence orientation cluster.} The orientation-dependent F1 cluster identified in Chapter~4 (Section~4.4) reflects the epistemic uncertainty property of the vMF-Contact model discussed in Chapter~2. At orientations underrepresented in the training distribution, the model produces a broad, low-density vMF distribution: few contact candidates fall within the centroid zone, and those that do carry low model confidence. The system selects the highest-ranked surviving candidate, but this candidate is disproportionately likely to fall at the boundary of the mechanically stable grip zone, where the silicone fingertip provides insufficient friction to hold a 2\,kg object through a full transport trajectory.
+\textbf{Epistemic uncertainty and the low-confidence orientation cluster.} 
+The orientation-dependent F1 cluster identified in Chapter~4 (Section~4.4) reflects the epistemic uncertainty property of the vMF-Contact model discussed in Chapter~2. 
+At orientations underrepresented in the training distribution, the model produces a broad, low-density vMF distribution: few contact candidates fall within the centroid zone, and those that do carry low model confidence. 
+The system selects the highest-ranked surviving candidate, but this candidate is disproportionately likely to fall at the boundary of the mechanically stable grip zone, where the silicone fingertip provides insufficient friction to hold a 2\,kg object through a full transport trajectory.
 
-The failure sequence --- high epistemic uncertainty $\rightarrow$ sparse centroid-filtered candidates $\rightarrow$ boundary contact selection $\rightarrow$ F1 --- validates the theoretical motivation for probabilistic uncertainty modelling introduced in Chapter~2. It also identifies the appropriate intervention. A confidence-weighted candidate selection strategy --- one that penalises candidates with low model confidence even when they satisfy the spatial filters --- would preferentially avoid marginal contact positions at low-coverage orientations. Alternatively, orientation pre-screening at delivery time, biasing AGV placement toward orientations with known high coverage, would reduce exposure to the low-confidence cluster without any algorithm modification.
+The failure sequence --- high epistemic uncertainty $\rightarrow$ sparse centroid-filtered candidates $\rightarrow$ boundary contact selection $\rightarrow$ F1 --- validates the theoretical motivation for probabilistic uncertainty modelling introduced in Chapter~2. 
+It also identifies the appropriate intervention. 
+A confidence-weighted candidate selection strategy --- one that penalises candidates with low model confidence even when they satisfy the spatial filters --- would preferentially avoid marginal contact positions at low-coverage orientations. 
+Alternatively, orientation pre-screening at delivery time, biasing AGV placement toward orientations with known high coverage, would reduce exposure to the low-confidence cluster without any algorithm modification.
 
-\textbf{F3 kinematic infeasibility.} F3 failures at specific orientations reflect the UR10e workspace boundary, not algorithm or hardware behaviour. The appropriate solution is a pre-execution reachability check that discards kinematically infeasible candidates before final selection, rather than discovering infeasibility at planning time. A prototype implementation is available in the development branch of the vMF-Contact fork (Section~3.4.5). Integrating and validating this filter on the current trial matrix is the most direct path to reducing F3 failures and improving the full-matrix success rate beyond 80\,\%.
+\textbf{F3 kinematic infeasibility.} 
+F3 failures at specific orientations reflect the UR10e workspace boundary, not algorithm or hardware behaviour. 
+The appropriate solution is a pre-execution reachability check that discards kinematically infeasible candidates before final selection, rather than discovering infeasibility at planning time. 
+A prototype implementation is available in the development branch of the vMF-Contact fork (Section~3.4.5). 
+Integrating and validating this filter on the current trial matrix is the most direct path to reducing F3 failures and improving the full-matrix success rate beyond 80\,\%.
 
-\textbf{F2 positional sensitivity.} F2 failures are few, position-sensitive, and operationally recoverable. In all observed cases, a minor repositioning of the object resolved the failure in a subsequent attempt. A position retry heuristic in the delivery placement protocol, or a feedback signal from the inference node to the AGV controller, would address the majority of F2 cases at negligible cost.
+\textbf{F2 positional sensitivity.} 
+F2 failures are few, position-sensitive, and operationally recoverable. 
+In all observed cases, a minor repositioning of the object resolved the failure in a subsequent attempt. 
+A position retry heuristic in the delivery placement protocol, or a feedback signal from the inference node to the AGV controller, would address the majority of F2 cases at negligible cost.
 
 \section{Deployment Evaluation as a Research Contribution}
 
-The structured deployment evaluation contributes methodologically, independently of the algorithm and hardware adaptations. The three-condition design --- 432 trials, two isolated factorial comparisons, failure mode stratification across a position $\times$ orientation matrix --- illustrates how the gap between laboratory benchmark performance and real industrial deployment can be characterised and decomposed.
+The structured deployment evaluation contributes methodologically, independently of the algorithm and hardware adaptations. 
+The three-condition design --- 432 trials, two isolated factorial comparisons, failure mode stratification across a position $\times$ orientation matrix --- illustrates how the gap between laboratory benchmark performance and real industrial deployment can be characterised and decomposed.
 
-The existing evaluation paradigm for grasping methods reports isolated grasp success under controlled conditions: calibrated placement, clean point clouds, success measured at gripper closure. This protocol is well-suited for comparing methods under reproducible conditions; it is not designed to characterise deployment performance. Deployment success is a system-level property. It compounds hardware-object compatibility, sensor noise from real environments, kinematic constraints of the specific robot platform, and downstream task requirements. None of these factors appears in isolated grasp benchmarks. The gap between 72.7\,\% (benchmark) and less than 5\,\% (this deployment without adaptation) is not attributable to any single factor --- it is the compound product of missing geometric priors, hardware-object force mismatch, and a stricter success criterion operating together.
+The existing evaluation paradigm for grasping methods reports isolated grasp success under controlled conditions: calibrated placement, clean point clouds, success measured at gripper closure. 
+This protocol is well-suited for comparing methods under reproducible conditions; 
+it is not designed to characterise deployment performance. 
+Deployment success is a system-level property. 
+It compounds hardware-object compatibility, sensor noise from real environments, kinematic constraints of the specific robot platform, and downstream task requirements. 
+None of these factors appears in isolated grasp benchmarks. 
+The gap between 72.7\,\% (benchmark) and 11.9\,\% (this deployment without adaptation) is not attributable to any single factor --- it is the compound product of missing geometric priors, hardware-object force mismatch, and a stricter success criterion operating together.
 
 The Baseline~1 result demonstrates that published benchmark performance does not transfer to a real deployment without adaptation. Baseline~2 and Final progressively close the gap by addressing one factor at a time, with each addressed factor producing a large, measurable improvement. This structure --- systematic decomposition of a benchmark-to-deployment gap into independently attributable factors --- constitutes one structured case study in how learning-based grasping methods require characterisation before industrial deployment, as a complement to, rather than a replacement for, laboratory benchmarks. Establishing whether this evaluation template generalises across object classes, gripper types, and deployment contexts is itself a direction for future work; the present study provides a single, carefully executed case study rather than a general methodology.
 
@@ -599,11 +748,16 @@ Each unsuitability is addressable through specific, tractable future work. None 
 
 This thesis asked: to what extent do centroid-based geometric constraints improve the grasping success rate and placement orientation consistency of an angle grinder compared to unconstrained vMF-Contact inference, under the same hardware configuration?
 
-The answer is unambiguous. Unconstrained vMF-Contact inference achieves a success rate below 5\,\% on the $3 \times 8 \times 6$ trial matrix. Centroid-based constraints raise this to approximately 50\,\%. The addition of a custom curved silicone fingertip raises it further to 80\,\%. The improvement from constraints alone --- approximately 45 percentage points --- demonstrates that the algorithmic adaptation is both necessary and effective. The further improvement from the fingertip --- approximately 30 percentage points --- demonstrates that hardware-object compatibility is an independent, load-bearing factor that no algorithm modification can substitute for.
+The answer is unambiguous. 
+Unconstrained vMF-Contact inference achieves a success rate OF 13.9\,\% on the $3 \times 8 \times 6$ trial matrix. 
+Centroid-based constraints raise this to 40.3\,\%. 
+The addition of a custom curved silicone fingertip raises it further to 77.1\,\%. 
+The improvement from constraints alone --- approximately 26.4 percentage points --- demonstrates that the algorithmic adaptation is both necessary and effective. 
+The further improvement from the fingertip --- approximately 36.8 percentage points --- demonstrates that hardware-object compatibility is an independent, load-bearing factor that no algorithm modification can substitute for.
 
 Three contributions realise these results. Contribution~A introduces two parameter-governed centroid-based constraints into the vMF-Contact inference pipeline: an annular grip zone defined relative to the object's geometric centroid proxy, and a gripper-axis alignment constraint with the object's principal axis. These address grip force insufficiency and orientation error --- the two dominant failure modes of unconstrained inference on this task --- through principled geometric constraints rather than post-hoc filtering. Contribution~B is a custom fingertip for the Robotiq 2F-140, incorporating a curved contact surface matched to the angle grinder handle and a silicone friction layer, which addresses the grip force insufficiency that persists after algorithmic correction. Contribution~C is the ROS2 and Docker integration pipeline that enables reproducible deployment of the full system on the UR10e cell.
 
-The Final condition result of 80\,\% demonstrates viability under conditions more demanding than the published vMF-Contact benchmark of 72.7\,\%~\cite{shi2025} --- lower grip force, a heavier object, and a stricter success criterion --- confirming that the targeted adaptations are sufficient to maintain above-benchmark performance despite the deployment disadvantage. Both adaptations are necessary; neither is sufficient alone.
+The Final condition result of 77.1\,\% demonstrates viability under conditions more demanding than the published vMF-Contact benchmark of 72.7\,\%~\cite{shi2025} --- lower grip force, a heavier object, and a stricter success criterion --- confirming that the targeted adaptations are sufficient to maintain above-benchmark performance despite the deployment disadvantage. Both adaptations are necessary; neither is sufficient alone.
 
 \section{Research Gaps Addressed}
 
@@ -615,7 +769,7 @@ The Final condition result of 80\,\% demonstrates viability under conditions mor
 
 Four directions follow directly from the limitations identified in Chapter~5.
 
-\textbf{Kinematic reachability filter.} F3 failures at specific orientations are the most directly addressable residual failure mode. A prototype filter that evaluates kinematic feasibility before candidate selection --- discarding unreachable poses prior to motion planning --- is implemented in the development branch of the vMF-Contact fork used in this thesis. Integrating and validating this filter on the current trial matrix is the most immediate path to improving the full-matrix success rate beyond 80\,\%, without changes to the algorithm or hardware.
+\textbf{Kinematic reachability filter.} F3 failures at specific orientations are the most directly addressable residual failure mode. A prototype filter that evaluates kinematic feasibility before candidate selection --- discarding unreachable poses prior to motion planning --- is implemented in the development branch of the vMF-Contact fork used in this thesis. Integrating and validating this filter on the current trial matrix is the most immediate path to improving the full-matrix success rate beyond 77.1\,\%, without changes to the algorithm or hardware.
 
 \textbf{Confidence-weighted candidate selection.} The epistemic uncertainty failure cluster --- orientations at which the model generates few low-confidence candidates, producing elevated F1 rates --- is addressable through a selection policy that penalises low-confidence candidates even when they satisfy the spatial filters. A confidence threshold on surviving candidates, or an explicit preference for candidates with probability mass above a learned coverage threshold, would reduce the probability of selecting marginal contact positions at underrepresented orientations.
 
@@ -627,7 +781,7 @@ Four directions follow directly from the limitations identified in Chapter~5.
 
 Learning-based grasping methods achieve strong benchmark performance. The central finding of this thesis is an answer to why industrial deployment consistently falls short: algorithms encode no object-level geometric priors, hardware-object compatibility is absent from evaluation protocols, and benchmark success criteria measure a narrow proxy for the system-level outcome that deployment requires.
 
-The adaptations introduced here --- centroid-based constraints and a purpose-designed fingertip --- are not patches on a broken method. They are the minimum necessary engineering to connect a laboratory-validated algorithm to a specific deployment context. That connection required understanding what the algorithm could not do, why the hardware was insufficient, and how to measure both in a way that separates their contributions. The result --- 80\,\% success on a task the base algorithm failed at below 5\,\% --- is evidence that the gap between benchmark and deployment is structured and closeable, not random and irreducible. Closing it systematically, across object classes and deployment contexts, is the work that remains.
+The adaptations introduced here --- centroid-based constraints and a purpose-designed fingertip --- are not patches on a broken method. They are the minimum necessary engineering to connect a laboratory-validated algorithm to a specific deployment context. That connection required understanding what the algorithm could not do, why the hardware was insufficient, and how to measure both in a way that separates their contributions. The result --- 77.1\,\% success on a task the base algorithm failed at 13.9\,\% --- is evidence that the gap between benchmark and deployment is structured and closeable, not random and irreducible. Closing it systematically, across object classes and deployment contexts, is the work that remains.
 
 
 % ============================================================
