@@ -16,8 +16,8 @@
 %   [X] Enter total end-to-end cycle time in Section 3.6
 %   [ ] Verify full author lists: cai2024, shi2025
 %   [ ] Insert Figures 3.1, 3.2, 3.3
-%   [ ] Add abstract (use /ars-abstract)
-%   [ ] Add AI-usage disclosure statement (use /ars-disclosure)
+%   [X] Add abstract (use /ars-abstract)
+%   [X] Add AI-usage disclosure statement (use /ars-disclosure)
 % ============================================================
 
 \documentclass[12pt, a4paper]{report}
@@ -119,11 +119,29 @@
 
 \chapter*{Abstract}
 \addcontentsline{toc}{chapter}{Abstract}
-% TODO: Generate bilingual abstract using /ars-abstract before submission.
-\textit{[Abstract to be added. Run \texttt{/ars-abstract} to generate bilingual abstract (English + German/Chinese) with 5--7 keywords.]}
+
+\section*{English}
+
+Learning-based grasp generation methods achieve strong benchmark performance but consistently fall short in real industrial deployment. This thesis identifies and addresses two systematic limitations of the vMF-Contact algorithm when deployed on a UR10e collaborative robot for angle grinder handling in a circular manufacturing cell: the absence of object-level geometric priors in candidate generation, and the lack of structured deployment evaluation methodology.
+
+Two algorithmic and one hardware contribution are presented. Centroid-based geometric constraints are introduced into the vMF-Contact inference pipeline as a post-inference filter: an annular grip-zone bound relative to the object's geometric centroid proxy addresses grip force insufficiency, while a gripper-axis alignment constraint eliminates placement orientation errors. A custom replacement fingertip for the Robotiq 2F-140, with a curved contact profile matched to the angle grinder's cylindrical handle and a silicone friction layer, addresses the residual grip failures that persist after algorithmic correction. Both adaptations are integrated in a reproducible ROS2 and Docker deployment pipeline.
+
+A factorial evaluation across 432 trials under three conditions --- unconstrained baseline, constrained algorithm, and constrained algorithm with custom fingertip --- isolates the contribution of each adaptation. Unconstrained vMF-Contact achieves 13.9\,\% success; centroid-based constraints raise this to 40.3\,\%; the custom fingertip raises it further to 77.1\,\%. The 77.1\,\% result exceeds the published vMF-Contact benchmark of 72.7\,\% despite three compounding deployment disadvantages: 47\,\% lower grip force, twice the object weight, and a stricter full pick-transport-place success criterion. Failure mode analysis identifies constraint-induced kinematic infeasibility as the dominant residual failure mechanism and provides a specific remediation path for each failure type.
+
+\vspace{0.5cm}
+\noindent\textbf{Keywords:} robotic grasping, vMF-Contact, centroid-based constraints, industrial deployment, pick-and-place, collaborative robot, uncertainty-aware grasping
 
 \vspace{1cm}
-\noindent\textbf{Keywords:} robotic grasping, vMF-Contact, centroid-based constraints, pick-and-place, industrial deployment, collaborative robot, point cloud, uncertainty-aware grasping
+\section*{Zusammenfassung (Deutsch)}
+
+Lernbasierte Greifgenerierungsmethoden erzielen in Benchmark-Evaluierungen hohe Erfolgsraten, scheitern jedoch regelmäßig beim Einsatz in realen industriellen Umgebungen. Diese Arbeit identifiziert und adressiert zwei systematische Einschränkungen des vMF-Contact-Algorithmus beim Betrieb auf einem kollaborativen UR10e-Roboter für die Handhabung einer Winkelschleifmaschine in einer Kreislauffertigungszelle: das Fehlen objektbezogener geometrischer Vorannahmen bei der Kandidatengenerierung sowie das Fehlen einer strukturierten Methodik zur Bewertung realer Deployments.
+
+Es werden zwei algorithmische und ein hardwareseitiger Beitrag vorgestellt. Schwerpunktbasierte geometrische Einschränkungen werden als Post-Inferenz-Filter in die vMF-Contact-Pipeline integriert: Eine ringförmige Greifzonengrenze relativ zum geometrischen Schwerpunkt-Proxywert des Objekts behebt Greifkraftmangel, während eine Greifer-Achsenausrichtungsbeschränkung Orientierungsfehler bei der Ablage eliminiert. Ein maßgefertigter Ersatz-Fingertip für den Robotiq 2F-140, mit einem an das zylindrische Handgriffprofil der Winkelschleifmaschine angepassten Kontaktprofil und einer Silikonreibungsschicht, behebt die nach der algorithmischen Korrektur verbleibenden Greiffehler. Beide Anpassungen sind in einer reproduzierbaren ROS2- und Docker-Deployment-Pipeline integriert.
+
+Eine faktorielle Evaluation über 432 Versuche unter drei Bedingungen isoliert den Beitrag jeder Anpassung: Uneingeschränktes vMF-Contact erreicht eine Erfolgsrate von 13,9\,\%; schwerpunktbasierte Beschränkungen steigern diese auf 40,3\,\%; der maßgefertigte Fingertip erhöht sie weiter auf 77,1\,\%. Dieses Ergebnis übertrifft den publizierten vMF-Contact-Benchmark von 72,7\,\% trotz drei erschwerender Deploymentbedingungen: 47\,\% geringere Greifkraft, doppeltes Objektgewicht und ein strengeres Erfolgskriterium für den vollständigen Greif-Transport-Ablage-Vorgang. Die Fehlermodusanalyse identifiziert constraint-induzierte kinematische Unerreichbarkeit als dominanten verbleibenden Fehlermechanismus.
+
+\vspace{0.5cm}
+\noindent\textbf{Schlüsselwörter:} Robotergreifen, vMF-Contact, schwerpunktbasierte Beschränkungen, industrielles Deployment, Pick-and-Place, kollaborativer Roboter, unsicherheitsbewusstes Greifen
 
 \chapter*{Acknowledgements}
 \addcontentsline{toc}{chapter}{Acknowledgements}
@@ -136,6 +154,19 @@ I hereby declare that this thesis is my own original work and that I have not us
 \vspace{1.5cm}
 \noindent Karlsruhe, \hspace{3cm} \underline{\hspace{5cm}}\\
 \hspace*{4.5cm} Yimin Hu
+
+\chapter*{AI-Usage Disclosure}
+\addcontentsline{toc}{chapter}{AI-Usage Disclosure}
+
+This thesis was prepared with the assistance of large language model (LLM) tools. The following AI system was used:
+
+\begin{itemize}
+  \item \textbf{Claude Code (Anthropic):} Used for academic writing assistance, including prose editing and refinement, structural feedback on chapter organisation, simulated peer-review commentary for revision guidance, bilingual abstract generation (English and German), and numerical consistency checking across chapters. All AI-assisted text was reviewed against experimental data and either accepted, revised, or rejected by the author before inclusion.
+\end{itemize}
+
+The following components were performed exclusively by the author without AI assistance: experimental design, hardware fabrication and characterisation, all 432 robot trials and data collection, quantitative data analysis, and the intellectual contributions described in Sections~1.3 and 6.2. The research questions, hypotheses, experimental results, failure mode classifications, and conclusions are the author's own.
+
+This disclosure is made in accordance with the guidelines of the Karlsruhe Institute of Technology (KIT) on the use of AI tools in academic work (academic year 2025--2026). The author accepts full responsibility for the accuracy, integrity, and originality of all content in this thesis.
 
 \tableofcontents
 \listoffigures
@@ -186,7 +217,7 @@ This thesis makes three contributions.
 
 Evaluation is conducted across 144 trials structured as a 6-position $\times$ 8-orientation $\times$ 3-repetition matrix under three conditions. Baseline~1 runs unconstrained vMF-Contact inference with the original Robotiq fingertip. Baseline~2 runs the centroid-constrained algorithm with the same fingertip. The Final condition uses the centroid-constrained algorithm with the custom fingertip. This factorial design isolates the software contribution (Baseline~1 versus Baseline~2) from the hardware contribution (Baseline~2 versus Final).
 
-Baseline~1 achieves a success rate OF 13.9\,\%, confirming that unconstrained inference is not viable for the task. Baseline~2 reaches 40.3\,\%, demonstrating that centroid-based constraints produce a substantial and necessary improvement. The Final condition achieves 77.1\,\%, demonstrating viability under conditions more demanding than the published vMF-Contact benchmark of 72.7\,\%~\cite{shi2025} --- lower grip force, a heavier object, and a stricter success criterion encompassing the full pick-transport-place sequence.
+Baseline~1 achieves a success rate of 13.9\,\%, confirming that unconstrained inference is not viable for the task. Baseline~2 reaches 40.3\,\%, demonstrating that centroid-based constraints produce a substantial and necessary improvement. The Final condition achieves 77.1\,\%, demonstrating viability under conditions more demanding than the published vMF-Contact benchmark of 72.7\,\%~\cite{shi2025} --- lower grip force, a heavier object, and a stricter success criterion encompassing the full pick-transport-place sequence.
 
 Learning-based grasping methods achieve strong benchmark performance. Why industrial deployment consistently falls short of these results --- and what adaptations close the gap --- is the central question this thesis addresses.
 
@@ -418,7 +449,7 @@ Table~\ref{tab:success_rates} summarises the overall success rates for each cond
 
 \begin{table}[htbp]
   \centering
-  \caption{Overall success rates per condition (144 trials each). Enter exact success counts from experimental logs.}
+  \caption{Overall success rates per condition (144 trials each).}
   \label{tab:success_rates}
   \begin{tabular}{llllr}
     \toprule
@@ -689,7 +720,7 @@ Alternatively, orientation pre-screening at delivery time, biasing AGV placement
 F3 failures at specific orientations reflect the UR10e workspace boundary, not algorithm or hardware behaviour. 
 The appropriate solution is a pre-execution reachability check that discards kinematically infeasible candidates before final selection, rather than discovering infeasibility at planning time. 
 A prototype implementation is available in the development branch of the vMF-Contact fork (Section~3.4.5). 
-Integrating and validating this filter on the current trial matrix is the most direct path to reducing F3 failures and improving the full-matrix success rate beyond 80\,\%.
+Integrating and validating this filter on the current trial matrix is the most direct path to reducing F3 failures and improving the full-matrix success rate beyond 77.1\,\%.
 
 \textbf{F2 positional sensitivity.} 
 F2 failures are few, position-sensitive, and operationally recoverable. 
@@ -745,7 +776,7 @@ Each unsuitability is addressable through specific, tractable future work. None 
 This thesis asked: to what extent do centroid-based geometric constraints improve the grasping success rate and placement orientation consistency of an angle grinder compared to unconstrained vMF-Contact inference, under the same hardware configuration?
 
 The answer is unambiguous. 
-Unconstrained vMF-Contact inference achieves a success rate OF 13.9\,\% on the $3 \times 8 \times 6$ trial matrix. 
+Unconstrained vMF-Contact inference achieves a success rate of 13.9\,\% on the $3 \times 8 \times 6$ trial matrix. 
 Centroid-based constraints raise this to 40.3\,\%. 
 The addition of a custom curved silicone fingertip raises it further to 77.1\,\%. 
 The improvement from constraints alone --- approximately 26.4 percentage points --- demonstrates that the algorithmic adaptation is both necessary and effective. 
