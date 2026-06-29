@@ -42,6 +42,7 @@
 \usepackage{array}
 \usepackage{multirow}
 \usepackage[table]{xcolor}
+\graphicspath{{images/}}
 
 % --- Bibliography (IEEE style) ---
 \usepackage{cite}
@@ -294,9 +295,7 @@ This chapter describes each component and the reasoning behind each design decis
 % Figure 3.1 placeholder
 \begin{figure}[htbp]
   \centering
-  \fbox{\parbox{0.8\textwidth}{\centering\vspace{3cm}
-    \textit{[Figure 3.1: System block diagram --- UR10e, Orbbec Femto Mega, Robotiq 2F-140, ROS2/Docker pipeline, data flow]}
-    \vspace{3cm}}}
+  \includegraphics[width=1.0\textwidth]{vmf_pipeline.png}
   \caption{System overview. The pipeline proceeds from point cloud acquisition through centroid-filtered vMF-Contact inference, motion planning, and execution.}
   \label{fig:system_overview}
 \end{figure}
@@ -333,6 +332,16 @@ The vMF-Contact network assigns candidate confidence based on local surface geom
 
 \subsection{Centroid Distance Constraints}
 
+% Figure 3.2 placeholder
+\begin{figure}[htbp]
+  \centering
+  \fbox{\parbox{0.8\textwidth}{\centering\vspace{3cm}
+    \textit{[Figure 3.2: Grip zone on the angle grinder point cloud. Inner radius $d_{\min}$ = 0.01\,m, outer radius $d_{\max}$ = 0.025\,m, centred on geometric centroid proxy $\hat{c}$.]}
+    \vspace{3cm}}}
+  \caption{Centroid-based grip zone (Equation~\ref{eq:cog}). Candidates within the shaded annulus are retained; candidates outside are discarded.}
+  \label{fig:grip_zone}
+\end{figure}
+
 Two distance thresholds are applied to the candidate set following base inference. For each candidate, the Euclidean distance from the proposed grasp point to the object's geometric centroid proxy is computed. Candidates outside the interval $[d_{\min}, d_{\max}]$ are discarded.
 
 The geometric centroid proxy is computed as a weighted sum of two point cloud statistics:
@@ -349,17 +358,7 @@ The threshold values applied in this work are:
   \item $d_{\min}$ = \param{grasp\_cog\_min\_dist\_th} = 0.01\,m (inner bound)
 \end{itemize}
 
-These define an annular grip zone centred on the centroid proxy. Candidates beyond 0.025\,m are rejected to prevent grip force insufficiency caused by excessive moment arm. Candidates within 0.01\,m are rejected because the gripper jaws cannot physically close at positions coincident with or immediately adjacent to the object's body centre. The threshold values are geometrically motivated: the angle grinder's handle midpoint lies approximately 35\,mm from the centroid proxy, placing it within the $[0.01, 0.025]$\,m annulus. They were validated against the physical geometry of the object and are not the result of optimisation over trial outcomes. Their object-specificity is a stated limitation, discussed in Chapter~5.
-
-% Figure 3.2 placeholder
-\begin{figure}[htbp]
-  \centering
-  \fbox{\parbox{0.8\textwidth}{\centering\vspace{3cm}
-    \textit{[Figure 3.2: Annular grip zone on the angle grinder point cloud. Inner radius $d_{\min}$ = 0.01\,m, outer radius $d_{\max}$ = 0.025\,m, centred on geometric centroid proxy $\hat{c}$.]}
-    \vspace{3cm}}}
-  \caption{Centroid-based annular grip zone (Equation~\ref{eq:cog}). Candidates within the shaded annulus are retained; candidates outside are discarded.}
-  \label{fig:annular_zone}
-\end{figure}
+These define a grip zone centred on the centroid proxy. Candidates beyond 0.025\,m or within 0.01\,mare rejected to prevent grip force insufficiency caused by excessive moment arm. The threshold values are geometrically motivated: the angle grinder's handle midpoint lies approximately 35\,mm from the centroid proxy, placing it within the $[0.01, 0.025]$\,m annulus. They were validated against the physical geometry of the object and are not the result of optimisation over trial outcomes. Their object-specificity is a stated limitation, discussed in Chapter~5.
 
 \subsection{Orientation Error: Problem Formulation}
 
@@ -375,6 +374,16 @@ vMF-Contact assigns equal confidence to contact normals on opposite sides of the
 
 A third filter enforces alignment between the gripper closing axis ($y$-axis in the gripper frame, projected into the object frame) and the object's principal axis. The principal axis is the eigenvector corresponding to the largest eigenvalue of the point cloud covariance matrix. For each surviving candidate, the dot product between the projected gripper $y$-axis and the principal axis is computed; candidates below the threshold \param{cog\_axis\_projection\_th} are discarded.
 
+% Figure 3.3 placeholder
+\begin{figure}[htbp]
+  \centering
+  \fbox{\parbox{0.8\textwidth}{\centering\vspace{3cm}
+    \textit{[Figure 3.3: Axis alignment constraint]}
+    \vspace{3cm}}}
+  \caption{Axis alignment constraint. The gripper closing axis is constrained to align with the object's principal axis to avoid orientation errors.}
+  \label{fig:axis_alignment}
+\end{figure}
+
 Following all three filters, the remaining candidates are ranked by the original vMF-Contact confidence scores and the top-ranked candidate is passed to the motion planner. If no candidates survive --- failure mode F2 --- the system reports a no-valid-pose failure without executing.
 
 \textbf{Reachability filter (future work).} The three-filter cascade --- centroid distance inner bound, centroid distance outer bound, and axis projection --- constrains candidates to positions that are mechanically sufficient and orientationally consistent, addressing failure modes F1 and F4. It does not evaluate whether the selected candidate is kinematically reachable by the UR10e before committing to execution. A candidate that satisfies all three filters may still produce an F3 failure if the corresponding robot configuration falls outside the reachable workspace or violates joint limits. A fourth filter that evaluates kinematic reachability prior to final candidate selection --- pre-emptively discarding unreachable poses and selecting the next viable candidate --- is implemented in the development branch of the vMF-Contact fork used in this thesis but was not incorporated in time for the controlled experiments reported in Chapter~4. Its evaluation is identified as a direction for future work (Chapter~6).
@@ -389,12 +398,10 @@ The fingertip improvement is method-agnostic: it applies regardless of which alg
 
 Fingertip bodies were fabricated by fused deposition modelling (FDM) in PETG. Silicone was cast directly into a recessed channel in the contact face of each body. The completed fingertips replace the standard pads on both jaws of the Robotiq 2F-140 without modification to the gripper's mechanical interface.
 
-% Figure 3.3 placeholder
-\begin{figure}[htbp]
+% Figure 3.4 placeholder
+\begin{figure}
   \centering
-  \fbox{\parbox{0.8\textwidth}{\centering\vspace{3cm}
-    \textit{[Figure 3.3: Custom fingertip design drawing (left) and installed configuration on the Robotiq 2F-140 (right). Curved contact surface ($r \approx 20$\,mm) and silicone friction layer visible.]}
-    \vspace{3cm}}}
+  \includegraphics[width=0.95\linewidth]{fingertips.jpg}
   \caption{Custom fingertip. Left: design drawing. Right: installed on the Robotiq 2F-140.}
   \label{fig:fingertip}
 \end{figure}
@@ -416,8 +423,34 @@ The complete pipeline is available at: \url{https://github.com/SFB-Circular-Fact
 
 \section{Experimental Protocol}
 
+% Figure 4.1 placeholder
+\begin{figure}[htbp]
+  \centering
+  \fbox{\parbox{0.8\textwidth}{\centering\vspace{3cm}
+    \textit{[Figure 4.1: Experimental Setup]}
+    \vspace{3cm}}}
+  \caption{Experimental setup. The UR10e is positioned to reach the AGV delivery zone, with the Orbbec Femto Mega mounted overhead. The angle grinder is placed at one of six positions and one of eight orientations for each trial.}
+  \label{fig:exprimental_setup}
+\end{figure}
+
 \subsection{Trial Matrix}
 \label{sec:trial_matrix}
+
+% Figure 4.2
+\begin{figure}
+  \centering
+  \includegraphics[width=0.95\linewidth]{pos_1.png}
+  \caption{6 object positions P1-P6 used in the evaluation.}
+  \label{fig:pos_overview}
+\end{figure}
+
+% Figure 4.3
+\begin{figure}
+  \centering
+  \includegraphics[width=0.95\linewidth]{orient_D.png}
+  \caption{8 object orientations O1-O8 used in the evaluation.}
+  \label{fig:orient_overview}
+\end{figure}
 
 The evaluation is structured as a $3 \times 8 \times 6$ factorial matrix: five object positions, eight object orientations, and nine repetitions per cell, yielding 144 trials per experimental condition. All trials are conducted on the UR10e + Orbbec Femto Mega + Robotiq 2F-140 cell described in Chapter~3 under three conditions:
 
@@ -520,6 +553,51 @@ Four failure modes are defined:
   \item \textbf{F3 (Kinematic infeasibility):} A valid candidate is selected, but the MoveIt~2 planner fails to find a collision-free trajectory within the planning time budget. Reported by the planning node.
   \item \textbf{F4 (Orientation error):} The pick-and-place sequence completes without a drop, but the object is placed at an incorrect orientation. Detected by visual inspection at the placement zone.
 \end{itemize}
+
+% Failure mode F1
+\begin{figure}
+  \centering
+  \includegraphics[width=0.95\linewidth]{F1.png}
+  \caption{Failure mode F1. Gripper failed to grasp the object.}
+  \label{fig:failure_mode_F1}
+\end{figure}
+
+% Failure mode F2 placeholder
+\begin{figure}[htbp]
+  \centering
+  \fbox{\parbox{0.8\textwidth}{\centering\vspace{3cm}
+    \textit{[Failure mode F2: No valid candidate after filtering.]}
+    \vspace{3cm}}}
+  \caption{Failure mode F2: No valid candidate after filtering.}
+  \label{fig:failure_mode_F2}
+\end{figure}
+
+% Failure mode F3 placeholder
+\begin{figure}[htbp]
+  \centering
+  \fbox{\parbox{0.8\textwidth}{\centering\vspace{3cm}
+    \textit{[Failure mode F3: Kinematic infeasibility.]}
+    \vspace{3cm}}}
+  \caption{Failure mode F3: Kinematic infeasibility. Target pose is received, but the motion planner fails to find a collision-free trajectory or certain joints exceed their limits.}
+  \label{fig:failure_mode_F3}
+\end{figure}
+
+% Failure mode F4
+\begin{figure}
+  \centering
+  \includegraphics[width=0.95\linewidth]{F4_grasp_opp.jpg}
+  \caption{Failure mode F4. Object grasped at incorrect orientation.}
+  \label{fig:failure_mode_F4}
+\end{figure}
+
+
+% Failure mode F5
+\begin{figure}
+  \centering
+  \includegraphics[width=0.95\linewidth]{F5.png}
+  \caption{Partially successful grasp. Due to insufficient grip force, manual intervention was required during execution.}
+  \label{fig:failure_mode_F5}
+\end{figure}
 
 \subsection{Failure Distribution by Condition}
 
