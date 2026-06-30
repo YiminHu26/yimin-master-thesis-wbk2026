@@ -335,9 +335,7 @@ The vMF-Contact network assigns candidate confidence based on local surface geom
 % Figure 3.2 placeholder
 \begin{figure}[htbp]
   \centering
-  \fbox{\parbox{0.8\textwidth}{\centering\vspace{3cm}
-    \textit{[Figure 3.2: Grip zone on the angle grinder point cloud. Inner radius $d_{\min}$ = 0.01\,m, outer radius $d_{\max}$ = 0.025\,m, centred on geometric centroid proxy $\hat{c}$.]}
-    \vspace{3cm}}}
+  \includegraphics[width=0.8\textwidth]{angle_grinder_spherical_grip_zone_cog.png}
   \caption{Centroid-based grip zone (Equation~\ref{eq:cog}). Candidates within the shaded annulus are retained; candidates outside are discarded.}
   \label{fig:grip_zone}
 \end{figure}
@@ -377,9 +375,7 @@ A third filter enforces alignment between the gripper closing axis ($y$-axis in 
 % Figure 3.3 placeholder
 \begin{figure}[htbp]
   \centering
-  \fbox{\parbox{0.8\textwidth}{\centering\vspace{3cm}
-    \textit{[Figure 3.3: Axis alignment constraint]}
-    \vspace{3cm}}}
+  \includegraphics[width=0.8\textwidth]{angle_grinder_spherical_grip_zone_axis_caption.png}
   \caption{Axis alignment constraint. The gripper closing axis is constrained to align with the object's principal axis to avoid orientation errors.}
   \label{fig:axis_alignment}
 \end{figure}
@@ -426,9 +422,7 @@ The complete pipeline is available at: \url{https://github.com/SFB-Circular-Fact
 % Figure 4.1 placeholder
 \begin{figure}[htbp]
   \centering
-  \fbox{\parbox{0.8\textwidth}{\centering\vspace{3cm}
-    \textit{[Figure 4.1: Experimental Setup]}
-    \vspace{3cm}}}
+  \includegraphics[width=0.8\textwidth]{robot_setup_1.jpg}
   \caption{Experimental setup. The UR10e is positioned to reach the AGV delivery zone, with the Orbbec Femto Mega mounted overhead. The angle grinder is placed at one of six positions and one of eight orientations for each trial.}
   \label{fig:exprimental_setup}
 \end{figure}
@@ -565,9 +559,7 @@ Four failure modes are defined:
 % Failure mode F2 placeholder
 \begin{figure}[htbp]
   \centering
-  \fbox{\parbox{0.8\textwidth}{\centering\vspace{3cm}
-    \textit{[Failure mode F2: No valid candidate after filtering.]}
-    \vspace{3cm}}}
+  \includegraphics[width=0.95\linewidth]{F2.png}
   \caption{Failure mode F2: No valid candidate after filtering.}
   \label{fig:failure_mode_F2}
 \end{figure}
@@ -575,9 +567,7 @@ Four failure modes are defined:
 % Failure mode F3 placeholder
 \begin{figure}[htbp]
   \centering
-  \fbox{\parbox{0.8\textwidth}{\centering\vspace{3cm}
-    \textit{[Failure mode F3: Kinematic infeasibility.]}
-    \vspace{3cm}}}
+  \includegraphics[width=0.95\linewidth]{F3.png}
   \caption{Failure mode F3: Kinematic infeasibility. Target pose is received, but the motion planner fails to find a collision-free trajectory or certain joints exceed their limits.}
   \label{fig:failure_mode_F3}
 \end{figure}
