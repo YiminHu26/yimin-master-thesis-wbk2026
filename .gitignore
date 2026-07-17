@@ -23,4 +23,6 @@
 *~
 .DS_Store
 
-Formatvorlage_LaTeX/
+Formatvorlage_Latex/
+.vscode/
+reference/
