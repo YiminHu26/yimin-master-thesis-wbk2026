@@ -97,7 +97,7 @@
 %! Zwingend benoetigte Angaben.
 	\author{Yimin Hu}
 	\authorismale
-	\title{Commisioning and Evaluation of a Machine Learning-based Autonomous Robotic Workstation}
+	\title{Commissioning and Evaluation of a Machine Learning-based Autonomous Robotic Workstation}
 	\subtitle{}
 	\placeanddate{Karlsruhe, 03.08.2026}
 
@@ -494,7 +494,6 @@ Fingertip bodies were fabricated by fused deposition modelling (FDM) in PETG. Si
 \section{ROS2 and Docker Integration Pipeline}
 \label{sec:docker-configuration}
 
-\textbf{TODO: Refine the whole docker pipeline with figures.}
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.95\linewidth]{docker-structure-full.png}
@@ -565,11 +564,14 @@ For each (position, orientation) cell, the angle grinder is manually placed to t
 \subsection{Success Criterion}
 \label{sec:success-criterion}
 
-A trial is recorded as a success if the angle grinder is lifted from the delivery position and transported to the CT scanner placement zone without being dropped. Minor manual intervention is recorded as partial success and is also counted as success in the final success rate, providing that the object is not released during the transport and placed in the placement zone within the orientation tolerance. The placement zone is an angle grinder holder. 
+A trial is recorded as a success if the angle grinder is lifted from the delivery position and transported to the CT scanner placement zone without being dropped (\cref{fig:success-grasp}). Minor manual intervention is recorded as partial success and is also counted as success in the final success rate, providing that the object is not released during the transport and placed in the placement zone within the orientation and position tolerance(\cref{fig:partially-success-grasp}). The placement zone is an angle grinder holder as shown in \cref{fig:angle-grinder-holder-tolerance}.
 
-\textbf{TODO: add figure of placement tolerance zone and its spatial relationship to the robot.}
-
-\textbf{TODO: add figure of successful grasp.}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.95\linewidth]{success-grasp.png}
+  \caption{Successful grasp. A grasp is counted as successful when the object is not released during the transport and placed in the holder within the orientation and position tolerance.}
+  \label{fig:success-grasp}
+\end{figure}
 
 \begin{figure}[htbp]
   \centering
@@ -577,6 +579,13 @@ A trial is recorded as a success if the angle grinder is lifted from the deliver
   \caption{Partially successful grasp. Due to insufficient grip force,
     manual intervention is required during placement.}
   \label{fig:partially-success-grasp}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.95\linewidth]{angle-grinder-holder-tolerance.png}
+  \caption{An angle grinder holder with the description of tolerance of placement.}
+  \label{fig:angle-grinder-holder-tolerance}
 \end{figure}
 
 Trials in which the gripper closes but the object is released during transport (F1), in which no valid candidate is selected after filtering (F2), in which the motion planner does not find a feasible trajectory or the robot hits its joint limit during motion (F3), or in which the object arrives at the placement zone with an inverted orientation (F4) are recorded as failures. F1, F2, F3, and F4 are classified by failure mode in \cref{sec:failure-mode-definitions}. All 144 trials per condition are included in the reported success rate; no trials are excluded after data collection.
