@@ -376,6 +376,7 @@ The filtered point cloud is treated as a single-object scene: no instance segmen
 The preprocessed cloud is passed directly to the vMF-Contact inference module without additional voxelisation or surface normal pre-computation; the network handles these internally.
 
 \section{vMF-Contact Inference and Centroid-Based Constraints}
+\label{sec:vmf-contact-inference}
 
 \subsection{Base Inference}
 \label{sec:base-inference}
@@ -1047,58 +1048,85 @@ The adaptations introduced here, including centroid-based constraints and a purp
 
 In the Final condition (Section~4.3), kinematic infeasibility (F3) is the dominant residual failure mode: 25 of 144 trials (17.4\,\%) end in motion-planner failure. Two orientations account for 96\,\% of these failures: O3 (15 of 18 trials) and O7 (9 of 18 trials). O3 achieves zero successes across all three experimental conditions.
 
-The F3 pattern is constraint-induced rather than intrinsic to the robot's workspace. In Baseline~1, unconstrained vMF-Contact inference selects kinematically accessible candidates at O3 and O7 — all 18 O3 trials reach the motion planner, but all fail through grip force insufficiency (F1\,=\,18, F3\,=\,0). The centroid distance constraints introduced in Contribution~A confine candidate selection to the handle region, but handle-region candidates at O3 and O7 systematically require approach angles near the UR10e workspace boundary. The motion planner then fails to find collision-free joint trajectories, producing F3 failures.
+% The F3 pattern is constraint-induced rather than intrinsic to the robot's workspace. In Baseline~1, unconstrained vMF-Contact inference selects kinematically accessible candidates at O3 and O7 — all 18 O3 trials reach the motion planner, but all fail through grip force insufficiency (F1\,=\,18, F3\,=\,0). The centroid distance constraints introduced in Contribution~A confine candidate selection to the handle region, but handle-region candidates at O3 and O7 systematically require approach angles near the UR10e workspace boundary. The motion planner then fails to find collision-free joint trajectories, producing F3 failures.
 
 Two operational mitigations were identified in Section~5.2: restricting AGV delivery to orientations outside the F3 cluster, or adding a pre-execution reachability check that filters candidates with approach geometries unlikely to be kinematically feasible before the motion planner is invoked. This appendix describes the second approach, implemented and evaluated after the main controlled experiment reported in Chapter~4.
 
 \section{Filter Design}
 \label{sec:appendix-filter-design}
+The reachability filter extends the existing constraints set of \cref{sec:vmf-contact-inference} with two additional directional constraints on the grasp approach geometry. Both checks are geometric heuristics — lightweight vector operations computed from the candidate pose — that pre-discard approach directions associated with workspace-boundary configurations without invoking the IK solver or motion planner.
 
-The reachability filter extends the three-filter cascade of Section~3.4 with two additional directional constraints on the grasp approach geometry. Both checks are geometric heuristics — lightweight vector operations computed from the candidate pose — that pre-discard approach directions associated with workspace-boundary configurations without invoking the IK solver or motion planner.
+\paragraph{Filter B1 — Frontal projection constraint.}
 
-\paragraph{Filter 4 — Frontal projection constraint.}
-The UR10e's nominal frontal direction is defined as $\mathbf{f} = [-1,\,0,\,0]^{\!\top}$ in the world frame. For each surviving candidate, the projection of the gripper closing axis $\hat{a}$ onto $\mathbf{f}$ is computed:
+\begin{figure}
+  \centering
+  \includegraphics[width=0.95\linewidth]{frontal-overview-1.png}
+  \caption{This figure shows the actual spatial representation of the frontal projection constraint. The gripper y-axis \param{y\ensuremath{\sb{g}}} should be facing the robot's frontal direction $\mathbf{f}$.}
+  \label{fig:frontal-overview}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.95\linewidth]{frontal-orient.png}
+  \caption{A representation of the possible object orientations and the gripper \param{y\ensuremath{\sb{g}}} axis after applying the frontal projection constraint.}
+  \label{fig:frontal-orient-grasp}
+\end{figure}
+
+The UR10e's nominal frontal direction is defined as $\mathbf{f} = [-1,\,0,\,0]^{\!\top}$ in the world frame. For each surviving candidate, the projection of the gripper closing axis \param{y\ensuremath{\sb{g}}} onto $\mathbf{f}$ is computed:
 \begin{equation}
-  p = \hat{a} \cdot \mathbf{f}.
+  p = \param{y\ensuremath{\sb{g}}} \cdot \mathbf{f}.
 \label{eq:frontal-projection}
 \end{equation}
-Candidates with $p \leq \texttt{grasp\_axis\_projection\_th} = 0$ are discarded. The threshold of zero requires a strictly positive projection, ensuring the gripper faces into the robot's primary workspace. Grasps directed away from the robot require shoulder and elbow joints to approach their limits in order to reach the target pose.
+Candidates with $p \leq \param{grasp\_axis\_projection\_th} = 0$ are discarded. The threshold of zero requires a strictly positive projection, ensuring the gripper faces into the robot's primary workspace. Grasps directed away from the robot require shoulder and elbow joints to approach their limits in order to reach the target pose and is hense rejected. As shown in \cref{fig:frontal-overview}.
 
-\paragraph{Filter 5 — Vertical approach constraint.}
-The gripper's approach axis $\hat{g}_{z}$ (the z-axis of the gripper frame) is constrained to remain within $\theta_{\max}$ of the downward vertical $-\hat{z}_{w}$:
+A figure that represents the possible grasp poses after applying this filter is shown in \cref{fig:vertical-grasp}. Note that there may be 2 possible grasp orientations at the two horizontal inital orientations, as their gripper y-axis \param{y\ensuremath{\sb{g}}} may either has a positive projection to the frontal axis $\mathbf{f}$, or not.
+
+
+\paragraph{Filter B2 — Vertical approach constraint.}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.95\linewidth]{vertical-grasp.png}
+  \caption{This figure shows valid grasp pose after applying the filter B2-vertical approach constraint. The gripper's approach axis \param{z\ensuremath{\sb{g}}} (the z-axis of the gripper frame) is constrained to remain within $\theta_{\max}$ of the world z-axis $\param{z\ensuremath{\sb{w}}}$:}
+  \label{fig:vertical-grasp}
+\end{figure}
+
+The gripper's approach axis \param{z\ensuremath{\sb{g}}} (the z-axis of the gripper frame) is constrained to remain within $\theta_{\max}$ of the world z-axis $-\param{z\ensuremath{\sb{w}}}$:
 \begin{equation}
-  \angle\!\left(\hat{g}_{z},\,-\hat{z}_{w}\right) \;\leq\; \theta_{\max}.
+  \angle\!\left(\param{z\ensuremath{\sb{g}}}\,-\param{z\ensuremath{\sb{w}}}\right) \;\leq\; \theta_{\max}.
 \label{eq:vertical-approach}
 \end{equation}
-The threshold $\texttt{grasp\_z\_negative\_world\_z\_angle\_th} = 10^{\circ}$ is applied. Candidates exceeding this angle are discarded.
+The threshold $\param{grasp\_z\_negative\_world\_z\_angle\_th} = 10^{\circ}$ is applied. Candidates exceeding this angle are discarded.
 
-A near-vertical approach minimises wrist rotation demand and keeps the end-effector in the region of the UR10e workspace where the redundancy resolver reliably produces joint-limit-safe configurations. At O3 and O7, handle-region candidates after centroid filtering tend to have tilted approach vectors because the object's handle faces directions that require non-vertical gripper entry at those orientations; the vertical constraint pre-filters these candidates before the motion planner is invoked.
+% A near-vertical approach minimises wrist rotation demand and keeps the end-effector in the region of the UR10e workspace where the redundancy resolver reliably produces joint-limit-safe configurations. At O3 and O7, handle-region candidates after centroid filtering tend to have tilted approach vectors because the object's handle faces directions that require non-vertical gripper entry at those orientations; the vertical constraint pre-filters these candidates before the motion planner is invoked.
 
+A near-vertical approach minimises wrist rotation possibility and keeps the end-effector in the region of proper grasp workspace where the gripper would not approach the object from the side. This helps avoid tilted approach and eventually manual adjustment after placement because of the object face direction. 
 \section{Pipeline Integration}
 \label{sec:appendix-pipeline}
 
-Filters~4 and~5 are inserted after Filter~3 (axis alignment, Section~3.4.3) and before motion planning, forming a five-stage cascade:
+Filters~B1 and~B2 are inserted beside the existing Filter A (axis alignment, \cref{sec:axis-alignment-constraint}) and before motion planning, forming a multi-stage cascade. A detailed diagram is shown in \cref{fig:filter-cascade}.
 
-\begin{enumerate}
-  \item Centroid distance outer bound (\textit{prevents grip-force insufficiency, F1})
-  \item Centroid distance inner bound (\textit{prevents grip-force insufficiency, F1})
-  \item Axis alignment with principal axis (\textit{prevents placement orientation error, F4})
-  \item \textbf{Frontal projection} — Eq.~\eqref{eq:frontal-projection} \quad\textit{(reachability heuristic, F3)}
-  \item \textbf{Vertical approach angle} — Eq.~\eqref{eq:vertical-approach} \quad\textit{(reachability heuristic, F3)}
-\end{enumerate}
+\begin{figure}
+  \centering
+  \includegraphics[width=0.95\linewidth]{filter-cascade-diagram.png}
+  \caption{Multi-stage candidate filtering cascade. Filters~B1 and~B2 are pre-emptive reachability checks that discard candidates with approach geometries likely to be kinematically infeasible.}
+  \label{fig:filter-cascade}
+\end{figure}
 
-Both new filters are vector arithmetic with negligible runtime cost. The pipeline latency increase relative to the Final condition is below 1\,ms per inference call. The implementation is in branch \texttt{dev\_3} of the vMF-Contact fork:
-\begin{center}
-\small\url{https://github.com/YiminHu26/vMF-Contact/blob/dev_3/vmf_contact_main/test_11_save_logs.py}
-\end{center}
-(function call at lines~775--778, parameter \texttt{use\_reachable\_grasp\_filter = True}).
+Both new filters are vector arithmetic with negligible runtime cost. The pipeline latency increase relative to the Final condition is below 1\,ms per inference call. 
+
+% The implementation is in branch \texttt{dev\_3} of the vMF-Contact fork:
+% \begin{center}
+% \small\url{https://github.com/YiminHu26/vMF-Contact/blob/dev_3/vmf_contact_main/test_11_save_logs.py}
+% \end{center}
+% (function call at lines~775--778, parameter \texttt{use\_reachable\_grasp\_filter = True}).
 
 \section{Experimental Protocol}
 \label{sec:appendix-protocol}
 
-The evaluation uses a reduced factorial matrix: 8 object orientations (O1--O8) $\times$ 1 delivery position $\times$ 3 repetitions per cell, yielding 24 trials in total. The hardware and software configuration matches the Final condition: centroid-based constraints active (\param{grasp\_cog\_max\_dist\_th}\,=\,0.025\,m, \param{grasp\_cog\_min\_dist\_th}\,=\,0.01\,m, \param{cog\_axis\_projection\_th}\,=\,0.5), custom curved silicone fingertips, UR10e + Orbbec Femto Mega + Robotiq 2F-140. The success criterion is identical to Section~4.1.3: full pick-transport-place completion without object drop or inverted placement.
+The evaluation uses a reduced factorial matrix: 8 object orientations (O1--O8) $\times$ 1 delivery position $\times$ 3 repetitions per cell, yielding 24 trials in total. The hardware and software configuration matches the Final condition: centroid-based constraints active (\param{grasp\_cog\_max\_dist\_th}\,=\,0.025\,m, \param{grasp\_cog\_min\_dist\_th}\,=\,0.01\,m, \param{cog\_axis\_projection\_th}\,=\,0.5), custom curved silicone fingertips, UR10e + Orbbec Femto Mega + Robotiq 2F-140. The success criterion follows \cref{sec:success-criterion} (full pick-transport-place completion without object drop) and is extended with a placement-quality sub-category, and counted as completed trials in the Success column: \textbf{PS} flags trials where the object is placed inverted relative to the intended target pose. Section~\ref{sec:appendix-ps-tradeoff} discusses the tradeoff this category reflect.
 
-The reduced matrix isolates orientation effects at a single position. Per-orientation results are directly comparable to the Final condition per-orientation counts in Table~4.9 at the evaluated position, isolating the effect of the reachability filter from position-level variation.
+The reduced matrix isolates orientation effects at a single position. Per-orientation results are directly comparable to the Final condition per-orientation counts in \cref{tab:appendix-results} at the evaluated position, isolating the effect of the reachability filter from position-level variation.
 
 \section{Results}
 \label{sec:appendix-results}
@@ -1109,52 +1137,52 @@ The reduced matrix isolates orientation effects at a single position. Per-orient
   \label{tab:appendix-results}
   \begin{tabular}{lrrrrr}
     \toprule
-    Orientation & F1 (grip) & F2 (no pose) & F3 (kinematic) & F4 (orient.) & Success \\
+    Orient. & F1(grip) & F2(no pose) & F3(kin.) & PS(Inverted orient.) & Success \\
     \midrule
-    O1 & & & & & \\
-    O2 & & & & & \\
-    O3 & & & & & \\
-    O4 & & & & & \\
-    O5 & & & & & \\
-    O6 & & & & & \\
-    O7 & & & & & \\
-    O8 & & & & & \\
+    O1 & 0 & 0 & 0 & 2 & 3 \\
+    O2 & 0 & 0 & 0 & 2 & 3 \\
+    O3 & 0 & 0 & 0 & 3 & 3 \\
+    O4 & 0 & 0 & 0 & 0 & 3 \\
+    O5 & 0 & 0 & 0 & 3 & 3 \\
+    O6 & 0 & 0 & 0 & 0 & 3 \\
+    O7 & 0 & 0 & 0 & 3 & 3 \\
+    O8 & 0 & 0 & 0 & 0 & 3 \\
     \midrule
-    \textbf{Total} & & & & & \textbf{/ 24} \\
+    \textbf{Total} & 0 & 0 & 0 & 13 & \textbf{24 / 24} \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-% TODO: fill Table A.1 from experimental logs once evaluation is complete.
+\cref{tab:appendix-results} summarises the overall grasping results for the new 24 trials. It delievered 100\,\% success across all orientations, with no F1, F2, or F3 failures. The residual placement defect (PS) is discussed in Section~\ref{sec:appendix-ps-tradeoff}.
 
 \section{Analysis}
 \label{sec:appendix-analysis}
 
-% TODO: replace the expected-effects paragraph below with actual analysis once
-%       Table A.1 is complete. Keep the mechanistic explanation in A.6.1.
+\subsection{Elimination of F1, F2, and F3}
+\label{sec:appendix-f1f3}
 
-\subsection{Expected Effects of the Reachability Filter}
-\label{sec:appendix-expected}
+Across all 24 trials, F1, F2, and F3 are fully eliminated (Table~\ref{tab:appendix-results}), including at O3 and O7, which achieved zero and low successes respectively across all three conditions in the main experiment (\cref{sec:failure-distribution-by-orientation}).
 
-The two new filters act on different failure mechanisms with predictable directional effects on the failure distribution.
+The Fontal projection constraint (Filter B1) filters candidates whose gripper y-axis poses to the frontal direction of the robot station, which is the direct mechanism for the F3 elimination at these two orientations. Unlike the anticipated risk that a tighter candidate set at O3 and O7 would convert F3 trials into F2 trials, no F2 failures occur anywhere in the reduced matrix: the surviving candidate sets at every orientation retained at least one candidate that satisfied both new filters.  The vertical approach constraint (Filter B2, $\theta_{\max} = 10^{\circ}$) removes tilted gripper approach direction candidates before the motion planner is invoked.
 
-\textbf{F3 at O3 and O7.}
-The vertical approach constraint (Filter~5, $\theta_{\max} = 10^{\circ}$) directly targets the mechanism that produces F3 at O3 and O7: handle-region candidates at those orientations tend to carry tilted approach vectors. Pre-filtering tilted candidates reduces the probability that the top-ranked surviving candidate requires a workspace-boundary joint configuration. F3 at O3 and O7 is expected to decrease; whether it reaches zero depends on whether any handle-region candidate at those orientations satisfies the $10^{\circ}$ constraint.
+The two filters also leave F1 unaffected, consistent with the two filters acting on approach geometry rather than on centroid-zone membership or axis alignment.
 
-\textbf{F2 at O3 and O7.}
-Each additional filter reduces the surviving candidate set. At orientations where the centroid filter already leaves few candidates (Section~4.4), Filters~4 and~5 may eliminate all remaining candidates, converting F3 trials into F2 trials. F2 is detectable before motion planning and can be operationally mitigated (retry, reposition); F3 requires a complete planning cycle to detect. Even if total failures do not decrease, a shift from F3 to F2 improves operational observability.
+\subsection{Placement tradeoff of the frontal projection constraint}
+\label{sec:appendix-ps-tradeoff}
 
-\textbf{F1 and F4.}
-Filter~4 (frontal projection) is orientation-symmetric with respect to the object's principal axis; it does not introduce a preferred placement direction. Filter~5 (vertical approach) constrains the approach angle but not the closing-axis direction. Neither filter is expected to affect F1 (grip force) or F4 (orientation error), which are governed by centroid zone membership and axis alignment respectively.
+Eliminating F1--F3 does not come without cost. Of the 24 trials, 13 are placed inverted relative to the intended target pose (\textbf{PS}); only O4, O6 and O8 are entirely free of a placement defect. O3, O5, and O7 are inverted in all three trials.
 
-\textbf{Productive orientations (O1, O2, O4, O5, O6, O8).}
-The Final condition already achieves 94.4\,\% success over these six orientations (102/108 trials over the full matrix). Handle-region candidates at productive orientations already tend toward near-vertical approach vectors, so Filter~5 is expected to discard few candidates. The net effect at productive orientations is expected to be small.
+This is a direct tradeoff of the frontal projection constraint (Filter B1, Eq.~\eqref{eq:frontal-projection}). Filter B1 selects candidates whose gripper y-axis projects positively onto the robot's frontal direction $\mathbf{f}$, without reference to which end of the object's principal axis the candidate sits on. At orientations where the axis-alignment filter (Filter A) leaves viable candidates on both ends of the principal axis, Filter B1 can select the end that satisfies the reachability heuristic rather than the end consistent with the fixed placement target. Because the placement stage executes a single hardcoded target pose regardless of which end of the object was grasped, a candidate selected from the "wrong" end arrives inverted at the delivery position. Since the reversed placement does not have a corresponding placement target pose, in some cases the object must be manually reoriented after placement to be usable.
+
+This tradeoff is acceptable for the current implementation. No trial drops the object, fails to reach a valid pose, or exceeds the robot's kinematic limits ($\text{F1} = \text{F2} = \text{F3} = 0$); the residual defect is confined to placement orientation, is immediately visible upon placement, and is acceptable for subsequent CT inspections. Exchanging a hard failure (F3, requiring a full retry cycle) for an immediately observable placement defect is a net improvement in a supervised deployment setting, even though it introduces a correction burden that Filters B1 and B2 alone do not remove.
 
 \subsection{Limitations}
 \label{sec:appendix-limitations}
 
 The two new filters are geometric heuristics, not exact kinematic feasibility checks. A candidate that passes both filters is not guaranteed to be reachable; a candidate that fails one filter may in some cases be reachable via an alternative IK solution. The $10^{\circ}$ threshold for the vertical approach constraint was set empirically based on observation of F3 failure poses and has not been optimised over a parameter grid. A threshold that is too tight increases F2; one that is too loose provides insufficient F3 reduction. The precise operating range of the threshold is an open question for future work.
 
-The reachability filter was evaluated at a single position. Position-dependent effects on the filter's performance — arising from the object's absolute location relative to the robot base frame — are not characterised in this evaluation and remain a direction for further investigation.
+The reachability filter was evaluated at a single position. Although it has been discussed in \cref{sec:failure-distribution-by-position} that in previous experiments the failures show no position-specific clustering, it is based on the filter A. Position-dependent effects on the filter's performance — arising from the object's absolute location relative to the robot base frame — are not characterised in this evaluation and remain a direction for further investigation.
+
+The placement stage itself is a further limitation exposed by this evaluation: it applies a single hardcoded target pose irrespective of grasp geometry, with no mechanism to detect whether the object was grasped along the principal axis in the orientation assumed by that target pose or the reverse. Removing PS therefore does not require reverting Filters B1 and B2; it requires an adaptive placement stage that determines, from the grasp candidate's pose relative to the object's principal axis, whether the object is being presented in the assumed orientation or reversed, and adjusts the release pose accordingly. Such a placement-detection algorithm is left for future work; the present evaluation reports the resulting PS counts explicitly rather than folding them into the Success count.
 
 \end{document}
