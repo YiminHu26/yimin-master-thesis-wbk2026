@@ -3598,7 +3598,7 @@
 \end{plainfrontmatterpage}
 }
 \newenvironment{acknowledgment}{
-\begin{plainfrontmatterpage}{Danksagung}
+\begin{plainfrontmatterpage}{Acknowledgement}
 }{
 \vspace{20mm}
 \@placeanddate
@@ -3609,15 +3609,9 @@
 \end{plainfrontmatterpage}
 }
 \newcommand{\statementoforiginality}{
-\begin{plainfrontmatterpage}{Eigenst\"andigkeitserkl\"arung}
+\begin{plainfrontmatterpage}{State of Originality}
 
-Ich erkl\"are hiermit, die vorliegende Arbeit
-selbstst\"andig und ohne unzul\"assige fremde Hilfe
-angefertigt zu haben. Die verwendeten Quellen und
-Hilfsmittel sind im Literaturverzeichnis vollst\"andig
-aufgef\"uhrt. Ich versichere, alles kenntlich gemacht zu
-haben, was aus Arbeiten anderer unver\"andert oder mit
-Ab\"anderungen \"ubernommen wurde.
+I sincerely affirm to have composed this thesis work autonomously, to have indicated completely and accurately all aids and sources used and to have marked anything taken from other works, with or without changes. Furthermore, I affirm to have observed the constitution of the KIT for the safeguarding of good scientiic practice, as amended.
 
 \vspace{20mm}
 \@placeanddate
