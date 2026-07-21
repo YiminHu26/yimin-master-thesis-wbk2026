@@ -225,9 +225,9 @@ the dominant residual failure mechanism. Another grasp reachability filter is im
 \newpage
 
 % ============================================================
-% List of Parameters
+% Table of abbreviations
 % ============================================================
-\chapter*{List of Parameters}
+\chapter*{Table of Abbreviations}
 
 \begin{longtable}{@{}p{0.13\textwidth}p{0.70\textwidth}p{0.13\textwidth}@{}}
 \toprule
@@ -277,7 +277,7 @@ The objective of this work is to bring a robotic station featuring a Universal R
 \section{Thesis Structure}
 \label{thesis-structure}
 
-Chapter~2 introduces the hardware and software fundamentals of the deployment cell. Chapter~3 traces the development of robotic grasping from model-based registration to uncertainty-aware deep learning, and establishes the two research gaps this work addresses. Chapter~4 describes the algorithmic and hardware contributions built on top of these fundamentals in this work. Chapter~5 presents the experimental setup and results, a failure mode analysis, and deployment recommendations. Chapter~6 summarises the contributions, states the limitations, and identifies directions for future work.
+Chapter~2 introduces the hardware, robot kinematics, and software fundamentals of the deployment cell. Chapter~3 traces the development of robotic grasping from model-based registration to uncertainty-aware deep learning, and establishes the two research gaps this work addresses. Chapter~4 describes the algorithmic and hardware contributions built on top of these fundamentals in this work. Chapter~5 presents the experimental setup and results, a failure mode analysis, and deployment recommendations. Chapter~6 summarises the contributions, states the limitations, and identifies directions for future work.
 
 
 % ============================================================
@@ -315,13 +315,154 @@ A software stack running on the mobile manipulator module can be split into five
 
 The target object evaluated throughout this thesis is an angle grinder, representative of the product class handled in the SFB-1574 cell. It has an elongated, asymmetric geometry with a cylindrical handle; its handle cross-section requires a jaw opening exceeding 85\,mm to achieve full gripper closure, which rules out the Robotiq 2F-85 and motivates the gripper selection described below.
 
-\textbf{UR10e Collaborative Robot.} The UR10e (Universal Robots, Odense, Denmark) is a 6-axis collaborative robot arm with a 1,300\,mm reach and a 12.5\,kg payload capacity. Its collaborative safety certification (ISO~10218-2) permits operation alongside an AGV delivery system without fixed physical separation. Positioning repeatability under nominal conditions is $\pm$0.05\,mm. The robot is controlled via the ROS2 Universal Robots driver, which exposes a MoveIt~2-compatible action interface for trajectory planning and execution.
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.5\textwidth]{ur10e.png}
+  \caption{Image of Universal Robots UR10e.}
+  \label{fig:ur10e}
+\end{figure}
 
-\textbf{Orbbec Femto Mega RGBD Camera.} The Orbbec Femto Mega provides structured-light depth sensing at up to 1280\,$\times$\,720 resolution over a depth range of 0.25--9.0\,m, with a nominal depth accuracy of 1--3\,mm within the operating range. The camera is mounted in a fixed eye-to-hand configuration, positioned above and lateral to the workspace to provide consistent coverage of the table surface across all object orientations. The ROS2 OrbbecSDK driver publishes registered point clouds in the camera optical frame; a calibrated static transform to the robot base frame is maintained in the TF2 tree.
+\textbf{UR10e Collaborative Robot.} The UR10e (Universal Robots, Odense, Denmark) is a 6-axis collaborative robot arm with a 1,300\,mm reach and a 12.5\,kg payload capacity. Its collaborative safety certification (ISO~10218-2) permits operation alongside an AGV delivery system without fixed physical separation. Positioning repeatability under nominal conditions is $\pm$0.05\,mm. The robot is controlled via the ROS2 Universal Robots driver, which exposes a MoveIt~2-compatible action interface for trajectory planning and execution. A product image is shown in \cref{fig:ur10e}
 
-\textbf{Robotiq 2F-140 Gripper.} The Robotiq 2F-140 parallel-jaw gripper provides a maximum jaw opening of 140\,mm and a maximum grip force of 125\,N. The 2F-140 was selected over the Robotiq 2F-85 (85\,mm opening, 235\,N grip force) for the jaw-opening reason given above; this geometric compatibility requirement comes at the cost of lower maximum grip force, a trade-off that directly motivates the custom fingertip design described in \cref{sec:custom-fingertip-design}. The gripper communicates with the UR10e controller via Modbus TCP and is commanded from the ROS2 pipeline through a dedicated gripper driver node.
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.3\textwidth]{orbbecfemtomega.jpg}
+  \caption{Image of Orbbec Femto Mega Camera}
+  \label{fig:orbbec-femto-mega}
+\end{figure}
 
-\textbf{Jetson Orin Nano Super Developer Kit.} The NVIDIA Jetson Orin Nano Super Developer Kit is a compact, high-performance edge AI platform designed for developers, researchers, and students building AI-powered applications. It delivers up to 67 INT8 TOPS of AI performance, making it suitable for demanding workloads such as computer vision, robotics, autonomous systems, and generative AI. Powered by a 6-core Arm Cortex-A78AE CPU, an NVIDIA Ampere GPU with 1,024 CUDA cores and 32 Tensor Cores, and 8 GB of LPDDR5 memory, the developer kit provides an excellent balance between performance, power efficiency and affordability. It is fully supported by the NVIDIA JetPack SDK, enabling developers to leverage CUDA, TensorRT, ROS 2, and other AI development tools for rapid prototyping and deployment of edge AI applications.
+\textbf{Orbbec Femto Mega RGBD Camera.} The Orbbec Femto Mega provides structured-light depth sensing at up to 1280\,$\times$\,720 resolution over a depth range of 0.25--9.0\,m, with a nominal depth accuracy of 1--3\,mm within the operating range. The camera is mounted in a fixed eye-to-hand configuration, positioned above and lateral to the workspace to provide consistent coverage of the table surface across all object orientations. The ROS2 OrbbecSDK driver publishes registered point clouds in the camera optical frame; a calibrated static transform to the robot base frame is maintained in the TF2 tree. A product image is shown in \cref{fig:orbbec-femto-mega}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.3\textwidth]{robotiq.jpg}
+  \caption{Image of Robotiq 2F-140 gripper.}
+  \label{fig:robotiq}
+\end{figure}
+
+\textbf{Robotiq 2F-140 Gripper.} The Robotiq 2F-140 parallel-jaw gripper provides a maximum jaw opening of 140\,mm and a maximum grip force of 125\,N. The 2F-140 was selected over the Robotiq 2F-85 (85\,mm opening, 235\,N grip force) for the jaw-opening reason given above; this geometric compatibility requirement comes at the cost of lower maximum grip force, a trade-off that directly motivates the custom fingertip design described in \cref{sec:custom-fingertip-design}. The gripper communicates with the UR10e controller via Modbus TCP and is commanded from the ROS2 pipeline through a dedicated gripper driver node. A product image is shown in \cref{fig:robotiq}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.4\textwidth]{jetson.jpg}
+  \caption{Image of Jetson Orin Nano Super Developer Kit.}
+  \label{fig:jetson}
+\end{figure}
+
+\textbf{Jetson Orin Nano Super Developer Kit.} The NVIDIA Jetson Orin Nano Super Developer Kit is a compact, high-performance edge AI platform designed for developers, researchers, and students building AI-powered applications. It delivers up to 67 INT8 TOPS of AI performance, making it suitable for demanding workloads such as computer vision, robotics, autonomous systems, and generative AI. Powered by a 6-core Arm Cortex-A78AE CPU, an NVIDIA Ampere GPU with 1,024 CUDA cores and 32 Tensor Cores, and 8 GB of LPDDR5 memory, the developer kit provides an excellent balance between performance, power efficiency and affordability. It is fully supported by the NVIDIA JetPack SDK, enabling developers to leverage CUDA, TensorRT, ROS 2, and other AI development tools for rapid prototyping and deployment of edge AI applications. A product image is shown in \cref{fig:jetson}.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.5\textwidth]{robot-station-duo.png}
+  \caption{Image of the robot workstation.}
+  \label{fig:robot-workstation}
+\end{figure}
+
+\textbf{Robot workstation.} To enable the collaborative robot to move around in the circular factory, a workstation is designed specifically for this work. The workstation is made of Bosch Rexroth 90\,mm $\times$ 90\,mm and 45\,mm $\times$ 45\,mm aluminium profiles. It has a size of 800\,mm $\times$ 440\,mm $\times$ 850\,mm. The internal storage space can hold the control box, the network switch and other necessary IO devices. Its CAD model and actual photo is shown in \cref{fig:robot-workstation}.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.5\textwidth]{clamping-duo.png}
+  \caption{Image of the clamping module.}
+  \label{fig:clamping}
+\end{figure}
+
+\textbf{Clamping.} To reduce the positional and orientational deviation of the mobile robot when it comes to the operating point, a clamping system which consists of a zero-point clamping module and two aluminium plates is designed. The model of the zero-point clamping module is LANG Technik Quick Point 96. It features four clamping screw holes. These holes are made to fasten the robot workstation, where 4 clamping screws are mounted on the frame of the workstation correspondingly. With this clamping mechanism, it ensures the robot always works at the same place. A product image of LANG Technik Quick Point 96 and a CAD model of the clamping system is shown in \cref{fig:clamping}. 
+
+\section{Robot Kinematics Fundamentals}
+\label{sec:robot-kinematics-fundamentals}
+
+The UR10e is modelled as a serial kinematic chain: six revolute joints connect seven rigid links in an open chain from the base to the end-effector flange. Each link's pose relative to its neighbour is a rigid-body transformation in $SE(3)$, combining a rotation and a translation and represented as a $4\times4$ homogeneous transformation matrix. The Denavit--Hartenberg (DH) convention~\cite{denavit1955kinematic} parameterises each joint-to-joint transform with four quantities --- link length $a_i$, link twist $\alpha_i$, link offset $d_i$, and joint angle $\theta_i$ --- combined into a single homogeneous transform~\cite{siciliano2009robotics}:
+
+\begin{equation}\label{eq:dh-transform}
+  A_i(\theta_i) =
+  \begin{bmatrix}
+    \cos\theta_i & -\sin\theta_i\cos\alpha_i & \sin\theta_i\sin\alpha_i & a_i\cos\theta_i \\
+    \sin\theta_i & \cos\theta_i\cos\alpha_i & -\cos\theta_i\sin\alpha_i & a_i\sin\theta_i \\
+    0 & \sin\alpha_i & \cos\alpha_i & d_i \\
+    0 & 0 & 0 & 1
+  \end{bmatrix}
+\end{equation}
+
+The four parameters follow from a frame assignment rule applied at every joint: the $z_{i-1}$ axis is aligned with joint $i$'s axis of rotation, and the $x_i$ axis is aligned with the common normal between $z_{i-1}$ and $z_i$ --- the unique line perpendicular to both consecutive joint axes. This choice of frame gives each of the four DH parameters a direct geometric reading:
+
+\begin{itemize}
+  \item $a_i$ (link length) --- the distance between the $z_{i-1}$ and $z_i$ axes, measured along their common normal. It is fixed by the physical offset between two consecutive joints and is zero when consecutive joint axes intersect.
+  \item $\alpha_i$ (link twist) --- the angle between the $z_{i-1}$ and $z_i$ axes, measured about the common normal. It is zero when consecutive joint axes are parallel, as is the case for several joint pairs in the UR10e's shoulder and elbow.
+  \item $d_i$ (link offset) --- the distance along $z_{i-1}$ from frame $i-1$'s origin to the point where the common normal crosses $z_{i-1}$. For a prismatic joint this quantity is the joint variable; for the UR10e's revolute joints it is a fixed geometric constant.
+  \item $\theta_i$ (joint angle) --- the angle about $z_{i-1}$ from the $x_{i-1}$ axis to the $x_i$ axis. For a revolute joint this is the joint variable read directly from the arm's encoders.
+\end{itemize}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.6\textwidth]{ur-kinematcis.png}
+  \caption{The Denavit-Hartenberg parameters of a UR robot. Adapted from~\cite{universalrobots2024dh}}
+  \label{fig:ur-dh}
+\end{figure}
+
+\cref{fig:ur-dh} shows the Denavit-Hartenberg parameters of a 6-axis UR robot. Consequently, for the UR10e's all-revolute structure, $\theta_i$ is the only quantity that changes as the arm moves; $a_i$, $\alpha_i$, and $d_i$ are constants fixed by the manufacturer's link dimensions and are tabulated once per robot model. This factorisation is what makes a 6-axis arm tractable to reason about: each joint contributes one matrix of the form in \cref{eq:dh-transform}, built from one variable and three constants, and the chain composes these matrices in sequence from base to flange.
+
+\cref{tab:ur10e-dh-parameters} lists the manufacturer-published values of $a_i$, $d_i$, and $\alpha_i$ for the UR10e~\cite{universalrobots2024dh}; the same parameter set is shared with the UR12e. The joint angles $\theta_i$ are omitted from the table because they are not fixed geometric constants: they are the joint variables read from the arm's encoders at run time.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Denavit--Hartenberg kinematic parameters for the UR10e, as published by the manufacturer~\cite{universalrobots2024dh}.}
+  \label{tab:ur10e-dh-parameters}
+  \begin{tabular}{crrr}
+    \toprule
+    Joint $i$ & $a_i$ [m] & $d_i$ [m] & $\alpha_i$ [rad] \\
+    \midrule
+    1 & 0        & 0.1807  & $\pi/2$  \\
+    2 & -0.6127  & 0       & 0        \\
+    3 & -0.57155 & 0       & 0        \\
+    4 & 0        & 0.17415 & $\pi/2$  \\
+    5 & 0        & 0.11985 & $-\pi/2$ \\
+    6 & 0        & 0.11655 & 0        \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+% TODO: insert figure of the UR10e frame assignment / DH parameter diagram here.
+
+Substituting a table row's $a_i$, $d_i$, $\alpha_i$ together with the corresponding run-time $\theta_i$ into \cref{eq:dh-transform}, then chaining the six resulting matrices per \cref{eq:fk-chain}, gives the UR10e's forward kinematics in closed form.
+
+\textbf{Forward kinematics.} Given the six joint angles $(\theta_1, \dots, \theta_6)$, forward kinematics computes the end-effector pose $T_6^0$ relative to the base frame as the product of the six per-joint DH transforms along the chain:
+
+\begin{equation}\label{eq:fk-chain}
+  T_6^0(\theta_1, \dots, \theta_6) = A_1(\theta_1)\,A_2(\theta_2)\,A_3(\theta_3)\,A_4(\theta_4)\,A_5(\theta_5)\,A_6(\theta_6)
+\end{equation}
+
+This mapping from joint space to task space is unique and always defined: every joint configuration produces exactly one end-effector pose via \cref{eq:fk-chain}, and evaluating it involves no search or iteration.
+
+\textbf{Inverse kinematics.} The inverse problem, central to grasp execution, asks the opposite question: given a target end-effector pose, such as a grasp candidate surviving the constraint filters in \cref{sec:vmf-contact-inference}, which joint configuration reaches it, i.e.\ which $\theta = (\theta_1, \dots, \theta_6)$ satisfies $T_6^0(\theta) = T_{\mathrm{target}}$. Inverse kinematics (IK) lacks the forward problem's uniqueness. A 6-DoF non-redundant arm can admit several joint solutions for the same reachable pose (e.g.\ elbow-up and elbow-down configurations); some poses admit no solution because they lie outside the arm's reachable workspace or would require exceeding a joint limit; and the mapping becomes locally non-invertible at kinematic singularities.
+
+Singularities and the local relationship between joint motion and end-effector motion are captured by the manipulator Jacobian $J(\theta) \in \mathbb{R}^{6\times6}$, which relates joint velocities $\dot{\theta}$ to end-effector linear velocity $v$ and angular velocity $\omega$:
+
+\begin{equation}\label{eq:jacobian-velocity}
+  \begin{bmatrix} v \\ \omega \end{bmatrix} = J(\theta)\,\dot{\theta}
+\end{equation}
+
+For an arm built entirely of revolute joints, the $i$-th column of $J(\theta)$ is
+
+\begin{equation}\label{eq:jacobian-column}
+  J_i(\theta) =
+  \begin{bmatrix}
+    z_{i-1} \times (o_6 - o_{i-1}) \\
+    z_{i-1}
+  \end{bmatrix}
+\end{equation}
+
+where $z_{i-1}$ is the axis of joint $i$ and $o_{i-1}$, $o_6$ are the origins of joint $i$ and the end-effector frame, respectively, all expressed in the base frame and obtained from the intermediate transforms in \cref{eq:fk-chain}. A configuration is singular when $\det J(\theta) = 0$, i.e.\ when $J(\theta)$ drops below full rank; at such configurations, \cref{eq:jacobian-velocity} cannot be inverted, and small task-space motions would require unboundedly large joint velocities.
+
+Closed-form analytical solutions of $T_6^0(\theta) = T_{\mathrm{target}}$ exist for the six-revolute-joint structure common to industrial arms including the UR10e~\cite{siciliano2009robotics}; where collision geometry or joint-limit padding must additionally be respected, the motion planner instead solves IK numerically, iterating an update of the form
+
+\begin{equation}\label{eq:jacobian-ik-update}
+  \theta_{k+1} = \theta_k + J(\theta_k)^{+}\left(x_{\mathrm{target}} - f(\theta_k)\right)
+\end{equation}
+
+where $f(\theta_k)$ is the end-effector pose at the current iterate (\cref{eq:fk-chain}), $x_{\mathrm{target}}$ is the target pose, and $J(\theta_k)^{+}$ is the Jacobian pseudoinverse, until the iterate converges to a feasible joint configuration or the search is exhausted.
+
+Reachable workspace, joint limits, and singularities are the three constraints that determine whether an otherwise valid grasp candidate is executable. \cref{sec:software-fundamentals} describes how MoveIt~2 embeds this IK step inside its collision-aware trajectory planning; failures of this planning step against these same three constraints are the kinematic infeasibility failure mode reported in \cref{sec:failure-mode-definitions}.
 
 \section{Software Fundamentals}
 \label{sec:software-fundamentals}
@@ -335,6 +476,19 @@ The target object evaluated throughout this thesis is an angle grinder, represen
 \textbf{MoveIt~2.} MoveIt~2 is the ROS~2 motion planning framework used to compute collision-aware joint trajectories for the UR10e. Given a target end-effector pose, MoveIt~2 samples and optimises a trajectory through the robot's configuration space that respects joint limits, self-collision constraints, and the collision geometry of the environment, using the UR10e's Unified Robot Description Format (URDF) model. The planned trajectory is then handed to the robot controller for execution.
 
 \textbf{Arm API~2.} Arm API2 is intended to provide interfacing support for robot manipulators for ROS~2 and MoveIt~2, enabling users to use one interface for multiple arms (Franka, Kinova, UR) and switch between planning and servo workflows without changing the app structure. With the ArmApi2Client class, user can control a robotic arm using ROS 2 actions and services. This client allows user to set velocity and acceleration scaling factors, change the arm's state, control the gripper, and move the arm to specified poses or joint positions.
+
+\textbf{Cartesian Pose Interpolation.} For point-to-point Cartesian moves, the \texttt{ArmApi2Client} produces the intermediate trajectory itself, rather than routing every waypoint through MoveIt~2's joint-space planner. Each commanded move proceeds through the same six steps:
+
+\begin{enumerate}
+  \item \textbf{Read the start pose.} The current end-effector pose is read from the robot state. If the current pose and the target pose are not already expressed in the same frame, both are transformed into the MoveIt planning frame.
+  \item \textbf{Check whether the move is reasonable.} The straight-line distance between the current and target positions and the rotation difference between the current and target orientations are computed. If either exceeds a configured threshold, the move is treated as too large for direct interpolation and the step is skipped.
+  \item \textbf{Build a motion profile.} From the configured average velocity and acceleration, a time profile for the move is estimated: constant-speed for very short moves, triangular (accelerate then decelerate, no cruise phase) for moves too short to reach the target speed, or trapezoidal (accelerate, cruise, decelerate) otherwise.
+  \item \textbf{Generate intermediate poses.} The motion profile is sampled at several time points between start and target. At each sample, the position is interpolated linearly between the start and target positions, and the orientation is interpolated with spherical linear interpolation (SLERP)~\cite{shoemake1985animating}, which follows the shortest arc between the two orientations on the unit-quaternion sphere rather than a linear blend of Euler angles.
+  \item \textbf{Send the poses.} Each interpolated pose is published in sequence as a pose command, with a sleep interval between successive commands matched to the sampling interval of the motion profile, so the end-effector traces the interpolated path at the intended speed instead of jumping between waypoints.
+  \item \textbf{Remember the end pose.} After the last sample is published, the final interpolated pose is stored as the client's current pose, so that the next commanded move starts its distance and profile calculations from this pose rather than re-reading a possibly stale robot state.
+\end{enumerate}
+
+In effect, this turns one large Cartesian move into a series of short, smoothly changing pose commands, so the end-effector appears to move continuously from the current pose to the target pose rather than snapping directly to it. The interpolator is a Cartesian-space complement to MoveIt~2's joint-space planning above: it is not collision-aware, and the distance and orientation check in step~2 is its only safeguard against an unreasonably large or discontinuous move; such moves are instead left to MoveIt~2's planner.
 
 \textbf{URCaps and External Control.} The UR10e control box runs Universal Robots' proprietary control software, which is extended through URCaps, a plugin interface for installing additional applications on the robot controller. The ROS2 Universal Robots driver requires the External Control URCap to be installed and active on the controller: it hands trajectory execution authority from the robot's native teach-pendant programs to an external ROS2 client. In this work URCaps and external control is mainly used with Arm API~2.
 
