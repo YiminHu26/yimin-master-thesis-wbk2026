@@ -473,7 +473,14 @@ Reachable workspace, joint limits, and singularities are the three constraints t
 
 \textbf{vMF-Contact Inference Node.} The vMF-Contact inference node is the core of the manipulating process. It generates grasp candidates based on von Mises-Fisher distribution and assigns grasp confidence to every grasp candidate. It will be introduced in \cref{sec:uncertainty-aware-grasping} in detail.
 
-\textbf{MoveIt~2.} MoveIt~2 is the ROS~2 motion planning framework used to compute collision-aware joint trajectories for the UR10e. Given a target end-effector pose, MoveIt~2 samples and optimises a trajectory through the robot's configuration space that respects joint limits, self-collision constraints, and the collision geometry of the environment, using the UR10e's Unified Robot Description Format (URDF) model. The planned trajectory is then handed to the robot controller for execution.
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.6\textwidth]{moveit-screenshot.jpg}
+  \caption{Screenshot of MoveIt~2.}
+  \label{fig:moveit-screenshot}
+\end{figure}
+
+\textbf{MoveIt~2.} MoveIt~2 is the ROS~2 motion planning framework used to compute collision-aware joint trajectories for the UR10e. Given a target end-effector pose, MoveIt~2 samples and optimises a trajectory through the robot's configuration space that respects joint limits, self-collision constraints, and the collision geometry of the environment, using the UR10e's Unified Robot Description Format (URDF) model. The planned trajectory is then handed to the robot controller for execution. A screenshot of MoveIt~2 is shown in \cref{fig:moveit-screenshot}.
 
 \textbf{Arm API~2.} Arm API2 is intended to provide interfacing support for robot manipulators for ROS~2 and MoveIt~2, enabling users to use one interface for multiple arms (Franka, Kinova, UR) and switch between planning and servo workflows without changing the app structure. With the ArmApi2Client class, user can control a robotic arm using ROS 2 actions and services. This client allows user to set velocity and acceleration scaling factors, change the arm's state, control the gripper, and move the arm to specified poses or joint positions.
 
