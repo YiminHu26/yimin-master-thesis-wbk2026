@@ -196,11 +196,12 @@ This disclosure is made in accordance with the guidelines of the Karlsruhe Insti
 
 % --- Abstract (English) ---
 \begin{abstract}
-Learning-based grasp generation methods achieve strong benchmark performance but consistently fall short in real industrial deployment. This thesis identifies and addresses two systematic limitations of the vMF-Contact algorithm when deployed on a UR10e collaborative robot for angle grinder handling in a circular manufacturing cell: the absence of object-level geometric priors in candidate generation, and the lack of structured deployment evaluation methodology.
+Learning-based grasp generation methods achieve strong benchmark performance but consistently fall short in real industrial deployment. This thesis addresses two systematic limitations of the vMF-Contact algorithm on a UR10e collaborative robot. The robot handles an angle grinder in a circular manufacturing cell. Candidate generation lacks object-level geometric priors, and deployment evaluation lacks a structured methodology.
 
-Two algorithmic and one hardware contribution are presented. Centroid-based geometric constraints are introduced into the vMF-Contact inference pipeline as a post-inference filter: an annular grip-zone bound relative to the object's geometric centroid proxy addresses grip force insufficiency, while a gripper-axis alignment constraint eliminates placement orientation errors. A custom replacement fingertip for the Robotiq 2F-140, with a curved contact profile matched to the angle grinder's cylindrical handle and a silicone friction layer, addresses the residual grip failures that persist after algorithmic correction. Both adaptations are integrated in a reproducible ROS2 and Docker deployment pipeline.
+Two algorithmic and one hardware contribution are presented. Centroid-based geometric constraints enter the vMF-Contact pipeline as a post-inference filter. An annular grip-zone bound, relative to the object's geometric centroid proxy, corrects grip force insufficiency. A gripper-axis alignment constraint eliminates placement orientation errors. A custom fingertip replaces the stock Robotiq 2F-140 tip. Its curved contact profile matches the angle grinder's cylindrical handle. A silicone friction layer addresses residual grip failures that persist after algorithmic correction. Both adaptations are integrated in a reproducible ROS2 and Docker deployment pipeline.
 
-A factorial evaluation across 432 trials under three conditions --- unconstrained baseline, constrained algorithm, and constrained algorithm with custom fingertip --- isolates the contribution of each adaptation. Unconstrained vMF-Contact achieves 13.9\,\% success; centroid-based constraints raise this to 40.3\,\%; the custom fingertip raises it further to 77.1\,\%. The 77.1\,\% result exceeds the published vMF-Contact benchmark of 72.7\,\% despite three compounding deployment disadvantages: 47\,\% lower grip force, twice the object weight, and a stricter full pick-transport-place success criterion. Failure mode analysis identifies constraint-induced kinematic infeasibility as the dominant residual failure mechanism.
+A factorial evaluation across 432 trials tested three conditions. These were an unconstrained baseline, the constrained algorithm, and the constrained algorithm with custom fingertip. This design isolates the contribution of each adaptation. Unconstrained vMF-Contact achieves 13.9\,\% success. Centroid-based constraints raise this to 40.3\,\%. The custom fingertip raises it further to 77.1\,\%. The 77.1\,\% result exceeds the published vMF-Contact benchmark of 72.7\,\%. This holds despite three compounding deployment disadvantages: lower grip force, twice the object weight, and a stricter pick-transport-place criterion. Failure mode analysis identifies constraint-induced kinematic infeasibility as
+the dominant residual failure mechanism. Another grasp reachability filter is implemented afterwards as supplementary to address this problem.
 
 \textbf{Keywords:} robotic grasping, vMF-Contact, centroid-based constraints, industrial deployment, pick-and-place, collaborative robot, uncertainty-aware grasping
 \end{abstract}
@@ -1044,6 +1045,7 @@ Four directions follow directly from the limitations identified in \cref{sec:lim
 % ============================================================
 \backmatter
 \listoffigures
+\newpage
 \listoftables
 \tocloftpagestyle{scrheadings}
 
