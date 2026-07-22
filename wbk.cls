@@ -3611,7 +3611,7 @@
 \newcommand{\statementoforiginality}{
 \begin{plainfrontmatterpage}{State of Originality}
 
-I sincerely affirm to have composed this thesis work autonomously, to have indicated completely and accurately all aids and sources used and to have marked anything taken from other works, with or without changes. Furthermore, I affirm to have observed the constitution of the KIT for the safeguarding of good scientiic practice, as amended.
+I sincerely affirm to have composed this thesis work autonomously, to have indicated completely and accurately all aids and sources used and to have marked anything taken from other works, with or without changes. Furthermore, I affirm to have observed the constitution of the KIT for the safeguarding of good scientific practice, as amended.
 
 \vspace{20mm}
 \@placeanddate

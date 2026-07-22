@@ -160,11 +160,11 @@
 
 % --- Acknowledgements ---
 \begin{acknowledgment}
-First of all, I would like to extend my sincere gratitude to my supervisor Edwin Blum. He trusted me and gave me full support even when I had not much knowledge about the robotic system. I would also like to express my thanks to all my colleagues who guided me through the whole process. And in the end, also many thanks to wbk who offered me access to the PTL, the UR10e Cobot, and the infrastructure at the institute.
+First of all, I would like to extend my sincere gratitude to my supervisor Edwin Blum. He trusted me and gave me full support even when I had not much knowledge about the robotic system. And I would like to express my thanks to all my colleagues who guided me through the whole process. Also many thanks to wbk who offered me access to the PTL, the UR10e Cobot, and the infrastructure at the institute.
 
-On a personal note, I want to thank my family who offered me the confort to study in Germany in the past 4 years. Many thanks to the friends I get to know here, whom I know would always stand by me and help me out.
+On a personal note, I want to thank my family who offered me the confort and condition to study in Germany in the past 4 years. Many thanks to the friends I get to know here, whom I know would always stand by me and help me out.
 
-In conclusion, I am grateful to everyone, who contributed to this significant milestone in my life. It has been 4 years since I came to Germany. I believe this thesis is a very good closing of what I have learned and achieved during this long journey. 
+In conclusion, I am grateful to everyone, who contributed to this significant milestone in my life. This journey in Germany has lasted for 4 years. I believe this thesis is a very good closing of what I have learned and achieved during this long journey. 
 
 \end{acknowledgment}
 
@@ -179,9 +179,9 @@ This thesis was prepared with the assistance of large language model (LLM) tools
   \item \textbf{Claude Code (Anthropic):} Used for academic writing assistance, including prose editing and refinement, structural feedback on chapter organisation, simulated peer-review commentary for revision guidance, and numerical consistency checking across chapters. All AI-assisted text was reviewed against experimental data and either accepted, revised, or rejected by the author before inclusion.
 \end{itemize}
 
-The following components were performed exclusively by the author without AI assistance: experimental design, hardware fabrication and characterisation, all 432 robot trials and data collection, quantitative data analysis, and the intellectual contributions described in \cref{sec:research-gaps-addressed}. The research questions, hypotheses, experimental results, failure mode classifications, and conclusions are the author's own.
+The following components were performed exclusively by the author without AI assistance: experimental design, hardware fabrication and characterisation, all 456 robot trials and data collection, quantitative data analysis, and the intellectual contributions described in \cref{sec:conclusion-summary}. The research questions, hypotheses, experimental results, failure mode classifications, and conclusions are the author's own.
 
-This disclosure is made in accordance with the guidelines of the Karlsruhe Institute of Technology (KIT) on the use of AI tools in academic work (academic year 2025--2026). The author accepts full responsibility for the accuracy, integrity, and originality of all content in this thesis.
+This disclosure is made in accordance with the guidelines of the Karlsruhe Institute of Technology (KIT) on the use of AI tools in academic work. The author accepts full responsibility for the accuracy, integrity, and originality of all content in this thesis.
 \newpage
 % --- Zusammenfassung (Deutsch) ---
 % \begin{summary}
@@ -196,12 +196,13 @@ This disclosure is made in accordance with the guidelines of the Karlsruhe Insti
 
 % --- Abstract (English) ---
 \begin{abstract}
-Learning-based grasp generation methods achieve strong benchmark performance but consistently fall short in real industrial deployment. This thesis addresses two systematic limitations of the vMF-Contact algorithm on a UR10e collaborative robot. The robot handles an angle grinder in a circular manufacturing cell. Candidate generation lacks object-level geometric priors, and deployment evaluation lacks a structured methodology.
+With the increasing degree of automation in the manufacturing industry, robotic systems have become a key topic. A manipulator module which features a robot, a mobile workstation and the computing capability to finish a flexible pick-and-place assignment and deliver materials for the intralogistics systems is a key enabler for the future circular factory.
 
-Two algorithmic and one hardware contribution are presented. Centroid-based geometric constraints enter the vMF-Contact pipeline as a post-inference filter. An annular grip-zone bound, relative to the object's geometric centroid proxy, corrects grip force insufficiency. A gripper-axis alignment constraint eliminates placement orientation errors. A custom fingertip replaces the stock Robotiq 2F-140 tip. Its curved contact profile matches the angle grinder's cylindrical handle. A silicone friction layer addresses residual grip failures that persist after algorithmic correction. Both adaptations are integrated in a reproducible ROS2 and Docker deployment pipeline.
+The work of this thesis is to implement an uncertainty-aware machine-learning-based algorithm vMF-Contact Grasping on the manipulator module. The robot handles an angle grinder in a computed tomography (CT) cell in the circular factory at Karlsruhe Institute of Technology (KIT). This thesis addresses two systematic limitations of the algorithm on a UR10e collaborative robot. Candidate generation lacks object-level geometric priors, and deployment evaluation lacks a structured methodology.
 
-A factorial evaluation across 432 trials tested three conditions. These were an unconstrained baseline, the constrained algorithm, and the constrained algorithm with custom fingertip. This design isolates the contribution of each adaptation. Unconstrained vMF-Contact achieves 13.9\,\% success. Centroid-based constraints raise this to 40.3\,\%. The custom fingertip raises it further to 77.1\,\%. The 77.1\,\% result exceeds the published vMF-Contact benchmark of 72.7\,\%. This holds despite three compounding deployment disadvantages: lower grip force, twice the object weight, and a stricter pick-transport-place criterion. Failure mode analysis identifies constraint-induced kinematic infeasibility as
-the dominant residual failure mechanism. Another grasp reachability filter is implemented afterwards as supplementary to address this problem.
+Two algorithmic and one hardware contribution are presented. Centroid-based geometric constraints enter the vMF-Contact pipeline as a post-inference filter. An annular grip-zone bound, relative to the object's geometric centroid proxy, corrects grip force insufficiency. A gripper-axis alignment constraint eliminates placement orientation errors. A custom fingertip replaces the stock Robotiq 2F-140 tip. Its curved contact profile matches the angle grinder's cylindrical handle. A silicone friction layer addresses residual grip failures that persist after algorithmic correction. All adaptations are integrated into a reproducible ROS2 and Docker deployment pipeline.
+
+A factorial evaluation across 432 trials tested three conditions. This 3-stage experiment isolates the contribution of each adaptation. Unconstrained vMF-Contact achieves 13.9\,\% success. Centroid-based constraints raise this to 40.3\,\%. The custom fingertip raises it further to 77.1\,\%. The 77.1\,\% result exceeds the published vMF-Contact benchmark of 72.7\,\%. This holds despite three compounding deployment disadvantages: lower grip force, twice the object weight, and a stricter pick-transport-place criterion. Failure mode analysis identifies constraint-induced kinematic infeasibility as the dominant residual failure mechanism. Another grasp reachability filter is implemented subsequently as a supplementary improvement.
 
 \textbf{Keywords:} robotic grasping, vMF-Contact, centroid-based constraints, industrial deployment, pick-and-place, collaborative robot, uncertainty-aware grasping
 \end{abstract}
