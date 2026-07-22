@@ -289,7 +289,7 @@ Chapter~2 introduces the hardware, robot kinematics, and software fundamentals o
 \section{System Overview}
 \label{sec:system-overview}
 
-The mobile manipulator module of the SFB-1574 Circular Factory at the Karlsruhe Institute of Technology (KIT) that is being commissioned and evaluated in this thesis is part of a circular factory. A circular factory is made up of three types of stations, i.e. production stations for remanufacturing products, inspection stations for checking products that have been used before and their condition, and an adaptive intralogistics system for material transport between the stations. The above-mentioned stations are supported by a fleet of mobile manipulators, equipped with various types of modules, such as buffers, for storing objects, transport modules for moving objects, and manipulator modules for processing the objects. The intelligent grasp pose inference method is used in the intelligent grasp pose inference method for the above-mentioned manipulator module. The intelligent grasp pose inference method will be explained in more detail in \cref{sec:uncertainty-aware-grasping}.
+The mobile manipulator module, that is being commissioned and evaluated in this thesis, is part of the SFB-1574 Circular Factory at the Karlsruhe Institute of Technology (KIT). A circular factory is made up of three types of stations, i.e. production stations for remanufacturing products, inspection stations for checking products that have been used before and their condition, and an adaptive intralogistics system for material transport between the stations. The above-mentioned stations are supported by a fleet of mobile manipulators, equipped with various types of modules, such as buffers, for storing objects, transport modules for moving objects, and manipulator modules for processing the objects. An uncertainty-aware machine-learning-based algorithm vMF-Contact Grasping is implemented to the above-mentioned manipulator module. The algorithm will be explained in more detail in \cref{sec:uncertainty-aware-grasping}.
 
 The evaluated robot station is a manipulator station picking, placing angle grinders delivered by an AGV to the placement zone of the CT-scanner for quality inspection. After quality inspection the AGV will be loaded with the angle grinder again and it will transfer the object to the next station. This task is one of the basic functions of the intralogistics in the Circular Factory. It is adaptive picking and manipulation of end-of-life products in production and in the quality inspection stations in presence of positional and geometric uncertainty.
 
@@ -323,7 +323,7 @@ The target object evaluated throughout this thesis is an angle grinder, represen
   \label{fig:ur10e}
 \end{figure}
 
-\textbf{UR10e Collaborative Robot.} The UR10e (Universal Robots, Odense, Denmark) is a 6-axis collaborative robot arm with a 1,300\,mm reach and a 12.5\,kg payload capacity. Its collaborative safety certification (ISO~10218-2) permits operation alongside an AGV delivery system without fixed physical separation. Positioning repeatability under nominal conditions is $\pm$0.05\,mm. The robot is controlled via the ROS2 Universal Robots driver, which exposes a MoveIt~2-compatible action interface for trajectory planning and execution. A product image is shown in \cref{fig:ur10e}
+\textbf{UR10e Collaborative Robot.} The UR10e (Universal Robots, Odense, Denmark) is a 6-axis collaborative robot arm with a 1,300\,mm reach and a 12.5\,kg payload capacity. Its collaborative safety certification (ISO~10218-2) permits operation alongside an AGV delivery system without fixed physical separation. Positioning repeatability under nominal conditions is $\pm$0.05\,mm. The robot is controlled via the ROS2 Universal Robots driver, which exposes a MoveIt~2-compatible action interface for trajectory planning and execution. A product image is shown in \cref{fig:ur10e}.
 
 \begin{figure}[htbp]
   \centering
@@ -332,7 +332,7 @@ The target object evaluated throughout this thesis is an angle grinder, represen
   \label{fig:orbbec-femto-mega}
 \end{figure}
 
-\textbf{Orbbec Femto Mega RGBD Camera.} The Orbbec Femto Mega provides structured-light depth sensing at up to 1280\,$\times$\,720 resolution over a depth range of 0.25--9.0\,m, with a nominal depth accuracy of 1--3\,mm within the operating range. The camera is mounted in a fixed eye-to-hand configuration, positioned above and lateral to the workspace to provide consistent coverage of the table surface across all object orientations. The ROS2 OrbbecSDK driver publishes registered point clouds in the camera optical frame; a calibrated static transform to the robot base frame is maintained in the TF2 tree. A product image is shown in \cref{fig:orbbec-femto-mega}
+\textbf{Orbbec Femto Mega RGBD Camera.} The Orbbec Femto Mega provides structured-light depth sensing at up to 1280\,$\times$\,720 resolution over a depth range of 0.25--9.0\,m, with a nominal depth accuracy of 1--3\,mm within the operating range. The camera is mounted in a fixed eye-to-hand configuration, positioned above and lateral to the workspace to provide consistent coverage of the table surface across all object orientations. The ROS2 OrbbecSDK driver publishes registered point clouds in the camera optical frame. A calibrated static transform to the robot base frame is maintained in the TF2 tree. A product image is shown in \cref{fig:orbbec-femto-mega}.
 
 \begin{figure}[htbp]
   \centering
@@ -341,7 +341,7 @@ The target object evaluated throughout this thesis is an angle grinder, represen
   \label{fig:robotiq}
 \end{figure}
 
-\textbf{Robotiq 2F-140 Gripper.} The Robotiq 2F-140 parallel-jaw gripper provides a maximum jaw opening of 140\,mm and a maximum grip force of 125\,N. The 2F-140 was selected over the Robotiq 2F-85 (85\,mm opening, 235\,N grip force) for the jaw-opening reason given above; this geometric compatibility requirement comes at the cost of lower maximum grip force, a trade-off that directly motivates the custom fingertip design described in \cref{sec:custom-fingertip-design}. The gripper communicates with the UR10e controller via Modbus TCP and is commanded from the ROS2 pipeline through a dedicated gripper driver node. A product image is shown in \cref{fig:robotiq}
+\textbf{Robotiq 2F-140 Gripper.} The Robotiq 2F-140 parallel-jaw gripper provides a maximum jaw opening of 140\,mm and a maximum grip force of 125\,N. The 2F-140 was selected over the Robotiq 2F-85 (85\,mm opening, 235\,N grip force) because the width of the grip handle of the angle grinder exceeds 85\,mm. This geometric requirement comes at the cost of lower maximum grip force, a trade-off that directly motivates the custom fingertip design described in \cref{sec:custom-fingertip-design}. The gripper communicates with the UR10e controller via Modbus TCP and is commanded from the ROS2 pipeline through a dedicated gripper driver node. A product image is shown in \cref{fig:robotiq}
 
 \begin{figure}[htbp]
   \centering
@@ -368,7 +368,7 @@ The target object evaluated throughout this thesis is an angle grinder, represen
   \label{fig:clamping}
 \end{figure}
 
-\textbf{Clamping.} To reduce the positional and orientational deviation of the mobile robot when it comes to the operating point, a clamping system which consists of a zero-point clamping module and two aluminium plates is designed. The model of the zero-point clamping module is LANG Technik Quick Point 96. It features four clamping screw holes. These holes are made to fasten the robot workstation, where 4 clamping screws are mounted on the frame of the workstation correspondingly. With this clamping mechanism, it ensures the robot always works at the same place. A product image of LANG Technik Quick Point 96 and a CAD model of the clamping system is shown in \cref{fig:clamping}. 
+\textbf{Clamping station.} To reduce the positional and orientational deviation of the mobile robot when it comes to the operating point, a clamping station which consists of a zero-point clamping module and two aluminium plates is designed. The model of the zero-point clamping module is LANG Technik Quick Point 96. It features four clamping screw holes. These holes are made to fasten the robot workstation, where 4 clamping screws are mounted on the frame of the workstation correspondingly. With this clamping station, it ensures the robot always works at the same place. A product image of LANG Technik Quick Point 96 and a CAD model of the clamping system is shown in \cref{fig:clamping}. 
 
 \section{Robot Kinematics Fundamentals}
 \label{sec:robot-kinematics-fundamentals}
@@ -403,7 +403,7 @@ The four parameters follow from a frame assignment rule applied at every joint: 
 
 \cref{fig:ur-dh} shows the Denavit-Hartenberg parameters of a 6-axis UR robot. Consequently, for the UR10e's all-revolute structure, $\theta_i$ is the only quantity that changes as the arm moves; $a_i$, $\alpha_i$, and $d_i$ are constants fixed by the manufacturer's link dimensions and are tabulated once per robot model. This factorisation is what makes a 6-axis arm tractable to reason about: each joint contributes one matrix of the form in \cref{eq:dh-transform}, built from one variable and three constants, and the chain composes these matrices in sequence from base to flange.
 
-\cref{tab:ur10e-dh-parameters} lists the manufacturer-published values of $a_i$, $d_i$, and $\alpha_i$ for the UR10e~\cite{universalrobots2024dh}; the same parameter set is shared with the UR12e. The joint angles $\theta_i$ are omitted from the table because they are not fixed geometric constants: they are the joint variables read from the arm's encoders at run time.
+\cref{tab:ur10e-dh-parameters} lists the manufacturer-published values of $a_i$, $d_i$, and $\alpha_i$ for the UR10e~\cite{universalrobots2024dh}. The joint angles $\theta_i$ are omitted from the table because they are the joint variables read from the arm's encoders at run time.
 
 \begin{table}[htbp]
   \centering
@@ -423,9 +423,7 @@ The four parameters follow from a frame assignment rule applied at every joint: 
   \end{tabular}
 \end{table}
 
-% TODO: insert figure of the UR10e frame assignment / DH parameter diagram here.
-
-Substituting a table row's $a_i$, $d_i$, $\alpha_i$ together with the corresponding run-time $\theta_i$ into \cref{eq:dh-transform}, then chaining the six resulting matrices per \cref{eq:fk-chain}, gives the UR10e's forward kinematics in closed form.
+Substituting the \cref{tab:ur10e-dh-parameters} row's $a_i$, $d_i$, $\alpha_i$ together with the corresponding run-time $\theta_i$ into \cref{eq:dh-transform}, then chaining the six resulting matrices per \cref{eq:fk-chain}, gives the UR10e's forward kinematics in closed form.
 
 \textbf{Forward kinematics.} Given the six joint angles $(\theta_1, \dots, \theta_6)$, forward kinematics computes the end-effector pose $T_6^0$ relative to the base frame as the product of the six per-joint DH transforms along the chain:
 
@@ -435,7 +433,7 @@ Substituting a table row's $a_i$, $d_i$, $\alpha_i$ together with the correspond
 
 This mapping from joint space to task space is unique and always defined: every joint configuration produces exactly one end-effector pose via \cref{eq:fk-chain}, and evaluating it involves no search or iteration.
 
-\textbf{Inverse kinematics.} The inverse problem, central to grasp execution, asks the opposite question: given a target end-effector pose, such as a grasp candidate surviving the constraint filters in \cref{sec:vmf-contact-inference}, which joint configuration reaches it, i.e.\ which $\theta = (\theta_1, \dots, \theta_6)$ satisfies $T_6^0(\theta) = T_{\mathrm{target}}$. Inverse kinematics (IK) lacks the forward problem's uniqueness. A 6-DoF non-redundant arm can admit several joint solutions for the same reachable pose (e.g.\ elbow-up and elbow-down configurations); some poses admit no solution because they lie outside the arm's reachable workspace or would require exceeding a joint limit; and the mapping becomes locally non-invertible at kinematic singularities.
+\textbf{Inverse kinematics.} The inverse problem, central to grasp execution, asks the opposite question: given a target end-effector pose, such as a grasp candidate surviving the constraint filters in \cref{sec:vmf-contact-inference}, which joint configuration reaches it, i.e.\ which $\theta = (\theta_1, \dots, \theta_6)$ satisfies $T_6^0(\theta) = T_{\mathrm{target}}$. Inverse kinematics (IK) lacks the forward problem's uniqueness. A 6-DoF non-redundant arm can admit several joint solutions for the same reachable pose (e.g.\ elbow-up and elbow-down configurations) Some poses admit no solution because they lie outside the arm's reachable workspace or would require exceeding a joint limit. And the mapping becomes locally non-invertible at kinematic singularities.
 
 Singularities and the local relationship between joint motion and end-effector motion are captured by the manipulator Jacobian $J(\theta) \in \mathbb{R}^{6\times6}$, which relates joint velocities $\dot{\theta}$ to end-effector linear velocity $v$ and angular velocity $\omega$:
 
@@ -453,9 +451,9 @@ For an arm built entirely of revolute joints, the $i$-th column of $J(\theta)$ i
   \end{bmatrix}
 \end{equation}
 
-where $z_{i-1}$ is the axis of joint $i$ and $o_{i-1}$, $o_6$ are the origins of joint $i$ and the end-effector frame, respectively, all expressed in the base frame and obtained from the intermediate transforms in \cref{eq:fk-chain}. A configuration is singular when $\det J(\theta) = 0$, i.e.\ when $J(\theta)$ drops below full rank; at such configurations, \cref{eq:jacobian-velocity} cannot be inverted, and small task-space motions would require unboundedly large joint velocities.
+where $z_{i-1}$ is the axis of joint $i$ and $o_{i-1}$, $o_6$ are the origins of joint $i$ and the end-effector frame, respectively, all expressed in the base frame and obtained from the intermediate transforms in \cref{eq:fk-chain}. A configuration is singular when $\det J(\theta) = 0$, i.e.\ when $J(\theta)$ drops below full rank. At such configurations, \cref{eq:jacobian-velocity} cannot be inverted, and small task-space motions would require unboundedly large joint velocities.
 
-Closed-form analytical solutions of $T_6^0(\theta) = T_{\mathrm{target}}$ exist for the six-revolute-joint structure common to industrial arms including the UR10e~\cite{siciliano2009robotics}; where collision geometry or joint-limit padding must additionally be respected, the motion planner instead solves IK numerically, iterating an update of the form
+Closed-form analytical solutions of $T_6^0(\theta) = T_{\mathrm{target}}$ exist for the six-revolute-joint structure common to industrial arms including the UR10e~\cite{siciliano2009robotics}. Where collision geometry or joint-limit padding must additionally be respected, the motion planner instead solves IK numerically, iterating an update of the form
 
 \begin{equation}\label{eq:jacobian-ik-update}
   \theta_{k+1} = \theta_k + J(\theta_k)^{+}\left(x_{\mathrm{target}} - f(\theta_k)\right)
@@ -463,14 +461,14 @@ Closed-form analytical solutions of $T_6^0(\theta) = T_{\mathrm{target}}$ exist 
 
 where $f(\theta_k)$ is the end-effector pose at the current iterate (\cref{eq:fk-chain}), $x_{\mathrm{target}}$ is the target pose, and $J(\theta_k)^{+}$ is the Jacobian pseudoinverse, until the iterate converges to a feasible joint configuration or the search is exhausted.
 
-Reachable workspace, joint limits, and singularities are the three constraints that determine whether an otherwise valid grasp candidate is executable. \cref{sec:software-fundamentals} describes how MoveIt~2 embeds this IK step inside its collision-aware trajectory planning; failures of this planning step against these same three constraints are the kinematic infeasibility failure mode reported in \cref{sec:failure-mode-definitions}.
+Reachable workspace, joint limits, and singularities are the three constraints that determine whether an otherwise valid grasp candidate is executable. \cref{sec:software-fundamentals} describes how MoveIt~2 embeds this IK step inside its collision-aware trajectory planning. Failures of this planning step against these three constraints are the kinematic infeasibility failure mode reported in \cref{sec:failure-mode-definitions}.
 
 \section{Software Fundamentals}
 \label{sec:software-fundamentals}
 
-\textbf{ROS2.} The Robot Operating System~2 (ROS2) is the middleware framework underlying the software stack. It organises the system as a graph of independent nodes exchanging messages over topics, services, and actions, built on the Data Distribution Service (DDS) standard for inter-process communication. This thesis uses the Humble Hawksbill long-term support release running on Ubuntu 22.04. Nodes for perception, inference, motion planning, and robot control communicate through this framework; the specific containerised arrangement of these nodes is described in \cref{sec:docker-configuration}.
+\textbf{ROS2.} The Robot Operating System~2 (ROS2) is the middleware framework underlying the software stack. It organises the system as a graph of independent nodes exchanging messages over topics, services, and actions, built on the Data Distribution Service (DDS) standard for inter-process communication. This thesis uses the POS2 Humble Hawksbill long-term support release running on Ubuntu 22.04. Nodes for perception, inference, motion planning, and robot control communicate through this framework. The specific containerised arrangement of these nodes is described in \cref{sec:docker-configuration}.
 
-\textbf{Orbbec~SDK.} The Orbbec~SDK is a cross-platform software development kit for Orbbec 3~D depth cameras, providing a unified interface to access RGB, depth, IMU, and point cloud data. It enables developers to configure camera parameters, synchronize sensors, process depth images, and generate 3~D point clouds. With its high-level APIs, sample applications, and support for robotics frameworks such as ROS~2, the Orbbec~SDK simplifies the development of computer vision, robotics, and 3~D perception applications.
+\textbf{Orbbec~SDK.} The Orbbec~SDK is a cross-platform software development kit for Orbbec 3D depth cameras, providing a unified interface to access RGB, depth, IMU, and point cloud data. It enables developers to configure camera parameters, synchronize sensors, process depth images, and generate 3D point clouds. With its high-level APIs, sample applications, and support for robotics frameworks such as ROS2, the Orbbec~SDK simplifies the development of computer vision, robotics, and 3D perception applications.
 
 \textbf{vMF-Contact Inference Node.} The vMF-Contact inference node is the core of the manipulating process. It generates grasp candidates based on von Mises-Fisher distribution and assigns grasp confidence to every grasp candidate. It will be introduced in \cref{sec:uncertainty-aware-grasping} in detail.
 
@@ -565,7 +563,7 @@ vMF-Contact~\cite{shi2025} is this thesis's grasp generation component (\cref{se
 
 % Rare training orientations occur in this thesis's 8-orientation matrix. For these, the predicted distribution turns broad and low-density. That signals high epistemic uncertainty at those orientations. Few or no candidates then survive post-processing filters (failure mode F2, \cref{chap:experimental-setup-and-results}). So the method fails detectably, never silently. This epistemic signal is vMF-Contact's most useful advantage.
 
-\cite{shi2025} report 72.7\,\% success on a diverse-object benchmark. They used a Robotiq 2F-85 gripper and objects up to $\sim$1\,kg. Success there means isolated grasp detection only. It only checks whether the gripper closes stably. The benchmark excludes transport, placement, and downstream task success.
+\cite{shi2025} report 72.7\,\% success on a diverse-object benchmark. They used a Robotiq 2F-85 gripper and objects up to $\sim$1\,kg. In that paper a process is counted as success, when the gripper could grasp the object up and hand it to the operator shortly after. It only checks whether the gripper closes stably. The benchmark excludes downstream task success such as transport and placement.
 
 \section{The Industrial Deployment Gap}
 \label{sec:industrial-deployment-gap}
@@ -589,7 +587,7 @@ Deployment success is more than just sensor noise. vMF-Contact's~\cite{shi2025} 
 
 
 % ============================================================
-\chapter{System Design and Methodology}
+\chapter{Own Approach}
 \label{chap:system-design}
 % ============================================================
 
@@ -643,9 +641,9 @@ The geometric centroid proxy is computed as a weighted sum of two point cloud st
   \hat{c} = 0.2 \cdot c_{\mathrm{obb}} + 0.8 \cdot c_{\mathrm{pcd}}
 \end{equation}
 
-where $\hat{c}$ is the geometric centroid proxy, $c_{\mathrm{obb}}$ is the centre of the object's oriented bounding box, and $c_{\mathrm{pcd}}$ is the centroid of the filtered point cloud. The 0.8 weighting towards the point cloud centroid reflects that the measured surface distribution provides a closer approximation to the object's mass distribution than the bounding box centre for an asymmetric object; the 0.2 bounding box contribution acts as a regulariser, stabilising the estimate against sparse or noisy boundary points where the raw point cloud centroid shifts toward the sensor-visible surface. This weighting was validated against the angle grinder's physical geometry by confirming that the resulting centroid proxy fell consistently within the mechanically stable grip zone across all five object positions. This approximation is a geometric proxy for the centre of gravity, not a physical measurement of it; it is referred to throughout this thesis as the \textit{geometric centroid proxy}.
+where $\hat{c}$ is the geometric centroid proxy, $c_{\mathrm{obb}}$ is the centre of the object's oriented bounding box, and $c_{\mathrm{pcd}}$ is the centroid of the filtered point cloud. The 0.8 weighting towards the point cloud centroid reflects that the measured surface distribution provides a closer approximation to the object's mass distribution than the bounding box centre for an asymmetric object Tthe 0.2 bounding box contribution acts as a regulariser, stabilising the estimate against noisy outliers. This weighting was validated against the angle grinder's physical geometry by confirming that the resulting centroid proxy fell consistently within the mechanically stable grip zone across all six object positions. This approximation is a geometric proxy for the centre of gravity, not a physical measurement of it. This geometric proxy is referred to throughout this thesis as the \textit{geometric centroid proxy}.
 
-The threshold values applied in this work are:
+The grip zone boundary values applied in this work are:
 \begin{itemize}
   \item $d_{\max}$ = \param{grasp\_cog\_max\_dist\_th} = 0.025\,m (outer bound)
   \item $d_{\min}$ = \param{grasp\_cog\_min\_dist\_th} = 0.01\,m (inner bound)
@@ -653,10 +651,10 @@ The threshold values applied in this work are:
 
 These define a grip zone centred on the centroid proxy (\cref{fig:grip-zone}). Candidates beyond 0.025\,m or within 0.01\,m are rejected to prevent grip force insufficiency caused by excessive moment arm. The threshold values are geometrically motivated: the angle grinder's handle midpoint lies approximately 20\,mm from the centroid proxy, placing it within the $[0.01, 0.025]$\,m annulus. They were validated against the physical geometry of the object and are not the result of optimisation over trial outcomes. Their object-specificity is a stated limitation, discussed in \cref{sec:limitations}.
 
-\subsection{Axis Alignment Constraint and Reachability}
+\subsection{Axis Alignment Constraint}
 \label{sec:axis-alignment-constraint}
 
-A third filter enforces alignment between the gripper closing axis ($y$-axis in the gripper frame, projected into the object frame) and the object's principal axis (\cref{fig:axis-alignment}). The principal axis is the eigenvector corresponding to the largest eigenvalue of the point cloud covariance matrix. For each surviving candidate, the dot product between the projected gripper $y$-axis and the principal axis is computed; candidates below the threshold $th_{axis\_proj}$ (\param{cog\_axis\_projection\_th}) are discarded.
+Another parameter of the filter enforces alignment between the gripper closing axis ($y$-axis in the gripper frame, projected into the object frame) and the object's principal axis (\cref{fig:axis-alignment}). The principal axis is the eigenvector corresponding to the largest eigenvalue of the point cloud covariance matrix. For each surviving candidate, the dot product between the projected gripper $y$-axis and the principal axis is computed; candidates below the threshold $th_{axis\_proj}$ (\param{cog\_axis\_projection\_th}) are discarded.
 
 \begin{figure}[htbp]
   \centering
@@ -666,7 +664,7 @@ A third filter enforces alignment between the gripper closing axis ($y$-axis in 
   \label{fig:axis-alignment}
 \end{figure}
 
-The three-filter cascade --- centroid distance inner bound, centroid distance outer bound, and axis projection --- constrains candidates to positions that are mechanically sufficient and orientationally consistent, addressing grip force insufficiency and orientation errors. It does not evaluate whether the selected candidate is kinematically reachable by the UR10e before committing to execution. A candidate that satisfies all three filters may still fail if the corresponding robot configuration falls outside the reachable workspace or violates joint limits. A fourth filter that evaluates kinematic reachability prior to final candidate selection --- pre-emptively discarding unreachable poses and selecting the next viable candidate --- is identified as a direction for future work (\cref{sec:future-work}) and implemented in Appendix \cref{sec:appendix-filter-design}.
+The filter that is introduced in this section, which includes centroid distance inner and outer bound and axis projection threshold, constrains candidates to positions that are mechanically sufficient and orientationally consistent, addressing grip force insufficiency and orientation errors. It does not evaluate whether the selected candidate is kinematically reachable by the UR10e before committing to execution. A candidate that satisfies this filter may still fail if the corresponding robot configuration falls outside the reachable workspace or violates joint limits. A second filter that evaluates kinematic reachability prior to final candidate selection --- pre-emptively discarding unreachable poses and selecting the next viable candidate --- is identified as a direction for future work (\cref{sec:future-work}) and implemented in Appendix \cref{sec:appendix-filter-design}.
 
 \section{Custom Fingertip Design}
 \label{sec:custom-fingertip-design}
@@ -697,11 +695,11 @@ Fingertip bodies were fabricated by fused deposition modelling (FDM) in polyacti
   \label{fig:docker-container-structure}
 \end{figure}
 
-The software stack runs on ROS2 Humble (Ubuntu 22.04) and is structured as 2 Docker containers managed by Docker Compose: perception (Orbbec ROS2 driver), inference (vMF-Contact, GPU-accelerated), motion planning (MoveIt~2 with UR10e model), and robot control (UR ROS2 driver), as shown in \cref{fig:docker-container-structure}. Containerisation includes all dependencies and environment in a single docker image, enabling fast deployment across development workstations with a simple "docker compose up" command.
+The software stack runs on ROS2 Humble (Ubuntu 22.04) and is structured as a Docker container managed by Docker Compose. It consists of 4 image layers: Source image, ROS2 base image, 1.overlay image and 2.overlay image as shown in \cref{fig:docker-container-structure}. Containerisation includes all dependencies and environment in a single final docker image, enabling fast deployment across development workstations with a simple "docker compose up" command.
 
-Containers communicate over ROS2's DDS middleware (FastDDS) on a shared host network namespace, maintaining ROS2 node discovery without inter-container bridging. It serves as the software fundamentals for the perception-inference-execution pipeline shown in \cref{fig:vmf-pipeline}. 
+As we are using a Jetson Orin Nano together with a laptop in this work, we had the container on both of the devices. Containers communicate over ROS2's DDS middleware (FastDDS) on a shared host network namespace, maintaining ROS2 node discovery without inter-container bridging. It serves as the software fundamentals for the perception-inference-execution pipeline shown in \cref{fig:software-overview} and \cref{fig:vmf-pipeline}. 
 
-The perception node processes and passes the original point cloud to the subsequent preprocessing node. The preprocessing node converts the point cloud in to the robot base frame via TF-transformation and passes it down. The inference node subscribes, runs inference and constraint filtering, and publishes the selected grasp pose in the robot base frame. The motion planning node computes a collision-aware trajectory using the UR10e URDF. The robot control node executes the trajectory and reports execution status. A logging node, co-located in the inference node, records per-trial metadata for each attempt: inference time, geometric centroid proxy, grasp pose, candidate count before and after filtering and point cloud logging.
+As shown in \cref{fig:software-overview}, the vMF-pipeline includes 5-stage nodes. The base node runs ROS2 as fundamental. The perception node processes and passes the original point cloud to the subsequent preprocessing node. The preprocessing node converts the point cloud in to the robot base frame via TF-transformation and passes it down. The inference node subscribes, runs inference and constraint filtering, and publishes the selected grasp pose in the robot base frame. The motion planning node computes a collision-aware trajectory using the UR10e URDF. The robot control node executes the trajectory and reports execution status. A logging node, co-located in the inference node, records per-trial metadata for each attempt: inference time, geometric centroid proxy, grasp pose, candidate count before and after filtering and point cloud logging.
 
 The total pipeline latency from point cloud acquisition to robot motion onset is 3--5\,seconds under nominal conditions, dominated by vMF-Contact inference and MoveIt~2 trajectory planning. End-to-end cycle time (from point cloud acquisition through robot motion completion and return to the home position) is approximately 2\,minutes. This is acceptable for the CT-cell's operational throughput of one part per inspection cycle. Higher-throughput applications would require inference optimisation (e.g., model quantisation or TensorRT conversion) or pipelined execution of inference and planning.
 
@@ -781,7 +779,7 @@ A trial is recorded as a success if the angle grinder is lifted from the deliver
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.4\linewidth]{angle-grinder-holder-tolerance.png}
+  \includegraphics[width=0.6\linewidth]{angle-grinder-holder-tolerance.png}
   \caption{An angle grinder holder with the description of tolerance of placement.}
   \label{fig:angle-grinder-holder-tolerance}
 \end{figure}
@@ -822,9 +820,9 @@ This confirms that the observed improvements are not attributable to random chan
 
 The Baseline~1 success rate of 13.9\,\% establishes that unconstrained vMF-Contact inference is not viable for this deployment. The algorithm generates geometrically plausible candidates that are mechanically or orientationally incompatible with the task at the large majority of tested conditions.
 
-The transition from Baseline~1 to Baseline~2, which shows an improvement of 26.4 percentage points, represents the software contribution. Centroid-based constraints filter out candidates at object extremities and enforce axis alignment, directly addressing both dominant Baseline~1 failure modes. This improvement is attributable entirely to the algorithmic modification; hardware is held constant.
+The transition from Baseline~1 to Baseline~2, which shows an improvement of 26.4\,\%, represents the software contribution. Centroid-based constraints filter out candidates at object extremities and enforce axis alignment, directly addressing both dominant Baseline~1 failure modes. This improvement is attributable entirely to the algorithmic modification; hardware is held constant.
 
-The transition from Baseline~2 to Final, which shows an improvement of 36.8 percentage points, represents the hardware contribution. The custom fingertip increases effective contact area and friction on the angle grinder handle, recovering grip failures on candidates that are algorithmically valid but mechanically marginal with the flat fingertip. This improvement is attributable entirely to the hardware modification; the algorithm is held constant.
+The transition from Baseline~2 to Final, which shows an improvement of 36.8\,\%, represents the hardware contribution. The custom fingertip increases effective contact area and friction on the angle grinder handle, recovering grip failures on candidates that are geometrically valid but mechanically insufficient with the flat fingertip. This improvement is attributable entirely to the hardware modification; the algorithm is held constant.
 
 Both contributions are independently load-bearing. As shown, the Baseline~2 result (40.3\,\%) is insufficient for reliable industrial operation. It shows that algorithmic contribution alone does not solve the deployment problem. A hypothetical custom-fingertip-only deployment without centroid constraints was not evaluated. The hardware contribution measured here (Baseline~2 to Final, showing an improvement of 36.8\,\%) is therefore conditional on the centroid-based constraints being active. It shows that both hardware and software contributions are necessary to achieve the Final condition's 77.1\,\% success rate. More implications of this result are discussed in \cref{sec:results-summary}.
 
@@ -837,9 +835,9 @@ The Final condition result of 77.1\,\% demonstrates viability under conditions m
 
 (2)~the angle grinder ($\sim$2\,kg) is approximately twice the weight of benchmark objects;
 
-(3)~the success criterion encompasses the full pick-transport-place sequence, whereas the benchmark measures isolated grasp detection.
+(3)~the success criterion encompasses the full pick-transport-place sequence, whereas the benchmark measures isolated grasp success.
 
-Each factor independently depresses the achievable success rate relative to the benchmark setting. That the Final condition achieves 77.1\,\% despite these three compounding disadvantages indicates that the centroid-based constraints and custom fingertip are sufficient to maintain above-benchmark performance even under substantially harder deployment conditions, not that the adapted system is intrinsically superior to the base algorithm on the benchmark task itself.
+Each factor independently would depress the achievable success rate relative to the benchmark setting. That the Final condition achieves 77.1\,\% despite these three compounding disadvantages indicates that the centroid-based constraints and custom fingertip are sufficient to maintain above-benchmark performance even under harder deployment conditions.
 
 \section{Failure Mode Analysis}
 \label{sec:failure-mode-analysis}
@@ -854,7 +852,7 @@ The gripper closes and the trajectory executes, but the object is dropped during
 
 The angle grinder weighs approximately 2\,kg and has an asymmetric elongated geometry. Grasps placed at the extremities of the object, either the tool head or the rear handle end, generate a torque about the gripper contact line proportional to the moment arm between the grasp point and the object's centre of gravity. At the Robotiq 2F-140's maximum grip force of 125\,N, this moment arm exceeds the stable holding threshold when the grasp is placed beyond approximately 50\,mm from the centroid.
 
-The vMF-Contact network assigns candidate confidence based on local surface geometry (curvature, contact normal direction, antipodal compatibility) without reference to where on the object the candidate lies relative to its mass distribution. A geometrically valid contact normal at the tool head is assigned the same score basis as one near the handle centre. The base inference pipeline therefore offers no mechanism to preferentially select candidates in the mechanically stable region.
+The vMF-Contact network assigns candidate confidence based on local surface geometry (curvature, contact normal direction, antipodal compatibility) without reference to where on the object the candidate lies relative to its mass distribution. A geometrically valid contact normal at the tool head is assigned the same or even  higher confidence score as one near the centroid. The base inference pipeline therefore offers no mechanism to preferentially select candidates in the mechanically stable region.
 
 \begin{figure}[htbp]
   \centering
@@ -893,9 +891,9 @@ The pick-and-place sequence completes without a drop, but the object is placed a
 
 The angle grinder is strongly asymmetric along its principal axis. A grasp that closes the Robotiq 2F-140 perpendicular to the principal axis may seat the object with its head pointing in either direction relative to the approach, producing an inverted placement.
 
-In practice, an inverted placement does not always cause a complete pick-and-place failure: the gripper may still transport the object successfully, with the error manifesting only at placement, where the object lands in the wrong orientation for the CT scanner. F4 is therefore a downstream task failure rather than a mechanical failure, and its impact on the success metric depends on how strictly placement orientation is enforced in the trial protocol.
+In practice, an inverted placement does not always cause a complete pick-and-place failure: the gripper may still transport the object successfully, with the error manifesting only at placement, where the object lands in the inconsistant orientation for the CT scanner. F4 is therefore a downstream task failure rather than a mechanical failure, and its impact on the success metric depends on how strictly placement orientation is enforced in the trial protocol.
 
-By introducing a new grasp axis alignment constraint, vMF-Contact assigns equal confidence to contact normals on opposite sides of the object's principal axis, which could expand the candidate set at critical positions to address F3. This would come with inverted placement as a trade-off. It is defined as future work in \cref{sec:future-work} and implemented in Appendix \cref{sec:appendix-filter-design}.
+By introducing a new grasp axis alignment constraint in Appendix \cref{sec:appendix-filter-design}, vMF-Contact assigns equal confidence to contact normals on opposite sides of the object's principal axis, which could expand the candidate set at critical positions to address F3. This would come with inverted placement as a trade-off. It is anaylzed in Appendix \cref{sec:appendix-limitations}.
 
 
 % Without an alignment constraint, the selected candidate may produce correct or inverted placement depending on which surface the top-ranked contact falls on, with no algorithm-level signal that the orientation is inconsistent. With the new grasp axis alignment constraint, this inconsistency can be detected and tolerated. This new constraintis defined as future work in \cref{sec:future-work}.
@@ -903,14 +901,14 @@ By introducing a new grasp axis alignment constraint, vMF-Contact assigns equal 
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.6\linewidth]{F4-grasp-opp.jpg}
-  \caption{Failure mode F4 in visualization. Object grasped at incorrect orientation.}
+  \caption{Failure mode F4 in visualization. Object grasped at inverted orientation.}
   \label{fig:failure-mode-F4-1}
 \end{figure}
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.6\linewidth]{F4-grasp-scene.png}
-  \caption{Failure mode F4 in real scene. Object placed at incorrect orientation.}
+  \caption{Failure mode F4 in real scene. Object placed at inverted orientation.}
   \label{fig:failure-mode-F4-2}
 \end{figure}
 
@@ -935,11 +933,11 @@ Table~\ref{tab:failure-modes} reports the failure mode distribution per conditio
   \end{tabular}
 \end{table}
 
-\textbf{Baseline~1 (13.9\,\%).} F1 dominates with 103 failures (71.5\,\%): unconstrained candidate selection places grasps at object extremities remote from the centroid, producing insufficient grip force during transport. F2 does not occur (0\,\%), because no filter is active. F3 accounts for 11 failures (7.6\,\%), concentrated at orientations that require joint configurations near the UR10e workspace boundary. F4 accounts for 10 failures (6.9\,\%): without an axis alignment constraint, off-axis candidates generate placement orientation errors at delivery.
+\textbf{Baseline~1 (13.9\,\%).} F1 dominates with 103 failures (71.5\,\%): unconstrained candidate selection places grasps at object extremities remote from the centroid, producing insufficient grip force during transport. F2 does not occur (0\,\%), because no filter is active. F3 accounts for 11 failures (7.6\,\%), concentrated at orientations that require joint configurations near the UR10e workspace boundary. F4 accounts for 10 failures (6.9\,\%). Without an axis alignment constraint, off-axis candidates generate placement orientation errors at delivery.
 
-\textbf{Baseline~2 (40.3\,\%).} F1 falls from 103 to 71 (49.3\,\% of trials): centroid distance constraints concentrate candidate selection in the stable handle region, eliminating the majority of extremity grasps. Residual F1 occurs where the flat fingertip contacts the cylindrical handle surface at a marginal line-contact point insufficient to sustain grip during transport. F2 appears at 1 trial (0.7\,\%), where point cloud degradation at the handle region causes all candidates to be rejected after centroid filtering. F3 increases marginally from 11 to 14 (9.7\,\%): constraint-selected candidates at certain orientations require slightly harder joint configurations than the unconstrained top-ranked candidate, expanding the planning failure set. F4 is eliminated (0\,\%): the axis projection constraint rejects candidates whose gripper axis does not align with the object's principal axis.
+\textbf{Baseline~2 (40.3\,\%).} F1 falls from 103 to 71 (49.3\,\% of trials): centroid distance constraints concentrate candidate selection in the stable handle region, eliminating the majority of extremity grasps. Residual F1 occurs where the flat fingertip contacts the cylindrical handle surface at a marginal line-contact point insufficient to sustain grip during transport. F2 appears at 1 trial (0.7\,\%), where point cloud degradation at the handle region causes all candidates to be rejected after centroid filtering. F3 increases marginally from 11 to 14 (9.7\,\%). Constraint-selected candidates at certain orientations require slightly harder joint configurations than the unconstrained top-ranked candidate, expanding the planning failure set. F4 is eliminated (0\,\%). The axis projection constraint rejects candidates whose gripper axis does not align with the object's principal axis.
 
-\textbf{Final (77.1\,\%).} F1 falls to 1 (0.7\,\%): the custom silicone fingertip eliminates nearly all residual grip failures. F2 increases from 1 to 7 (4.9\,\%): the increment reflects inter-session point cloud variability. Final condition trials were conducted in a separate experimental session in which minor object placement offsets caused transient reductions in handle-region candidate density. No algorithmic change causes this increase. F3 increases from 14 to 25 (17.4\,\%): driven by O3 ($12\to15$) and O7 ($1\to9$). The orientation-specific F3 pattern is examined in \cref{sec:failure-distribution-by-orientation}. F4 remains 0 (0\,\%): orientation compliance is maintained at Baseline~2 level; the fingertip modification does not interact with the axis alignment constraint.
+\textbf{Final (77.1\,\%).} F1 falls to 1 (0.7\,\%): the custom silicone fingertip eliminates nearly all residual grip failures. F2 increases from 1 to 7 (4.9\,\%). The increment reflects inter-session point cloud variability. Final condition trials were conducted in a separate experimental session in which minor object placement offsets caused transient reductions in handle-region candidate density. No algorithmic change causes this increase. F3 increases from 14 to 25 (17.4\,\%). It is mainly driven by O3 ($12\to15$) and O7 ($1\to9$). The orientation-specific F3 pattern is examined in \cref{sec:failure-distribution-by-orientation}. F4 remains 0 (0\,\%). Orientation compliance is maintained at Baseline~2 level.
 
 \subsection{Failure Distribution by Orientation}
 \label{sec:failure-distribution-by-orientation}
@@ -1006,7 +1004,7 @@ Table~\ref{tab:failure-modes} reports the failure mode distribution per conditio
 
 The 8-orientation matrix reveals structured failure patterns. Three clusters emerge from per-orientation success rate analysis in the 3 conditions.
 
-\textbf{Epistemic uncertainty and low-confidence orientations lead to F1.} In Baseline~2 (\cref{tab:baseline2-orientation-clusters}), orientations O1, O2, O5, O6, and O7 produce elevated F1 rates (9--16 failures per orientation out of 18 trials). These orientations yield few surviving candidates after centroid filtering(typically one to two candidates) compared to five to ten at well-represented orientations. The sparse pool is consistent with high epistemic uncertainty. The vMF-Contact model has limited training coverage of these viewpoints, producing a low-density distribution that generates few high-confidence candidates within the centroid zone. The system selects from a small, low-confidence pool, increasing the probability of selecting a candidate at a marginal contact position where the flat fingertip provides insufficient grip.
+\textbf{Epistemic uncertainty and low-confidence orientations lead to F1 before adapting the fingertip.} In Baseline~2 (\cref{tab:baseline2-orientation-clusters}), orientations O1, O2, O5, O6, and O7 produce elevated F1 rates (9--16 failures per orientation out of 18 trials). These orientations yield few surviving candidates after centroid filtering(typically one to two candidates) compared to five to ten at well-represented orientations. The result shows the impact of epistemic uncertainty on the inference, as the point clouds at these orientations are usually incomplete from a single viewpoint. The vMF-Contact model has limited training coverage of these viewpoints, producing a low-density distribution that generates few high-confidence candidates within the centroid zone. The system selects from a small, low-confidence pool, increasing the probability of selecting a candidate at a marginal contact position where the flat fingertip provides insufficient grip.
 
 \textbf{F2 elevates and F1 almost eliminates in the Final condition.} In the Final condition, F2 failures occur at a small number of orientation cells (O3\,=\,3, O4\,=\,2, O5\,=\,1, O8\,=\,1). This may be because the hardware was repositioned between sessions, causing minor variations in object placement and point cloud coverage. The F2 failures are concentrated at orientations where the handle region is partially occluded or where sensor noise degrades point cloud coverage, reducing the number of candidates that survive the centroid distance filter. In all observed F2 cases, a minor object repositioning resolved the failure in a subsequent attempt. F2 failures are recorded as failures in the trial protocol, with no repositioning permitted between delivery and execution. In a production deployment, the environment in which the object is placed should avoid scenes with complex lighting conditions, and a reposition of the object would recover the majority of these cases at negligible operational cost.
 
@@ -1014,15 +1012,15 @@ The custom silicone fingertip substantially resolves the F1 failures in the Fina
 
 \textbf{F3 dominates failure at critical orientations O3 and O7 in the Final condition.} O3 and O7 account for 24 of the 25 F3 failures in the Final condition and constitute the primary F3 cluster (\cref{tab:baseline1-orientation-clusters}--\cref{tab:final-orientation-clusters}).
 
-The F3 pattern at O3 is mostly caused by the newly introduced constaints rather than an intrinsic property of the kinematic envelope. In Baseline~1, unconstrained candidate selection produces kinematically accessible poses at O3. All 18 trials proceed to motion planning, but all fail through grip force insufficiency (F1\,=\,18, F3\,=\,0). Once centroid distance constraints restrict candidate selection in Baseline~2, the feasible candidate set at O3 is confined to approach angles near the UR10e workspace boundary, producing F3\,=\,12. The pattern intensifies in the Final condition (F3\,=\,15, F2\,=\,3). O3 achieves zero successes across all three conditions.
+The F3 pattern at O3 is mostly caused by the newly introduced axis alignment constaints rather than an intrinsic property of the kinematic envelope. In Baseline~1, unconstrained candidate selection produces kinematically accessible poses at O3. All 18 trials proceed to motion planning, but all fail through grip force insufficiency (F1\,=\,18, F3\,=\,0). Once centroid distance constraints restrict candidate selection in Baseline~2, the feasible candidate set at O3 is confined to approach angles near the UR10e workspace boundary, producing F3\,=\,12. The pattern intensifies in the Final condition (F3\,=\,15, F2\,=\,3). O3 achieves zero successes across all three conditions.
 
 At O7, F3 rates vary across conditions (Baseline~1: 11, Baseline~2: 1, Final: 9). The anomalously low Baseline~2 rate likely reflects session-level sampling variance: centroid-constrained candidate selection at O7 happened to favour kinematically accessible poses in the Baseline~2 session, while both the Baseline~1 and Final sessions encountered workspace boundary more frequently due to minor inter-session differences in object placement.
 
 Both orientations are included in the full-matrix success rate denominator, as they represent real failure conditions in the deployment. If we exclude O3 and O7 from the final result, the success rate over the six kinematically productive orientations (O1, O2, O4, O5, O6, O8) is \textbf{94.4\,\%}. It is actually a satisfactory considering the complexity of the task case.
 
-Therefore, one practical solution to this failure mode could be to avoid the critical orientations O3 and O7 in deployment, either by instructing the AGV to deliver the object in a different orientation or by rotating the object in situ before grasping. This is a simple operational mitigation that does not require any algorithmic change.
+Therefore, one practical solution to this failure mode could be to avoid the critical orientations O3 and O7 in deployment, either by instructing the AGV to deliver the object in a different orientation or by rotating the object in advance before grasping. This is a simple operational mitigation that does not require any algorithmic change.
 
-Another practical solution to this failure mode would be to substitute the object axis alignment constraint at these critical orientations (O3, O7 and possibly O5) with a new reachability filter. It only limits candidates to those whose gripper axis is limited to the frontal direction of the robot station, rather than enforcing a strict orientation or alignment to the object principle axis. This would expand the candidate set at O3 and O7, allowing the planner to select kinematically feasible poses. But it comes with inverted placement at these orientations as a trade-off. It is defined as future work in \cref{sec:future-work}.
+Another practical solution to this failure mode would be to substitute the object axis alignment constraint at these critical orientations (O3, O7 and possibly O5) with a new reachability filter. It only limits candidates to those whose gripper axis is limited to the frontal direction of the robot station, rather than enforcing a strict orientation or alignment to the object principle axis. This would expand the candidate set at O3 and O7, allowing the planner to select kinematically feasible poses. But it comes with inverted placement at these orientations as a trade-off. It is defined as future work in \cref{sec:future-work}. A prototype filter has been implemented in Appendix \cref{chap:appendix}.
 
 \subsection{Failure Distribution by Position}
 \label{sec:failure-distribution-by-position}
@@ -1098,7 +1096,7 @@ The change from Baseline~1 to Baseline~2, which is from 13.9\,\% to 40.3\,\%, sh
 
 We should pay attention to the Baseline~1 result. When the success rate is 13.9\,\% out of 144 tries, it means the algorithm without any changes only works in fewer than one out of six attempts. If we compare this to the vMF-Contact algorithm, which gets 72.7\,\% right in a controlled test~\cite{shi2025}, we can see that the basic algorithm is not good enough to use without some changes in this situation. The two changes we made to the algorithm, which are based on the shape of the objects, are necessary for this to work and not just a way to make up for things in the environment.
 
-The Baseline~2 result, which is 40.3\,\%, shows that even when we limit the grasp zone to a certain area which tends to have a higher grasp success rate, it still fails half the time because the gripper does not have enough grasp force when it lifts and moves the objects. The custom fingertip is fixing a problem with the hardware that we cannot fix by changing the algorithm. When we use both the algorithm and the custom fingertip together, we get a better result, which is 77.1\,\%.
+The Baseline~2 result, which is 40.3\,\%, shows that even when we limit the grasp zone to a certain area which tends to have a higher grasp success rate, it still fails half the time because the gripper does not have enough grasp force when it lifts and moves the objects. In the Final condition, when we use both the algorithm and the custom fingertip together, we get a better result, which is 77.1\,\%. 
 
 Final results showed that our system performed well in the harder test case compared to the test case used in the~\cite{shi2025} paper. We used less force to grasp the objects compared to the test case (125\,N vs 235\,N) and the objects were much heavier (approximately 2\,kg vs 1\,kg) and we were testing a complete task of picking, transport and grasping of objects. Therefore, the test case was much hard than the test cases used in the paper, but the system performed well. This shows that the modifications made to the system worked well.
 
@@ -1184,7 +1182,7 @@ Four contributions realise these results.
 \section{Future Work}
 \label{sec:future-work}
 
-Four directions follow directly from the limitations identified in \cref{sec:limitations}.
+% Four directions follow directly from the limitations identified in \cref{sec:limitations}.
 
 \textbf{Kinematic reachability filter.} F3 failures at specific orientations are the most directly addressable residual failure mode. A prototype reachability filter that evaluates kinematic feasibility before candidate selection is implemented in Appendix \cref{sec:appendix-filter-design}. Integrating and validating this filter on the current trial matrix is the most immediate path to improving the full-matrix success rate beyond 77.1\,\%, without changes to the algorithm or hardware.
 
@@ -1241,7 +1239,7 @@ Four directions follow directly from the limitations identified in \cref{sec:lim
 \section{Motivation}
 \label{sec:appendix-motivation}
 
-In the Final condition (\cref{sec:failure-mode-analysis}), kinematic infeasibility (F3) is the dominant residual failure mode: 25 of 144 trials (17.4\,\%) end in motion-planner failure. Two orientations account for 96\,\% of these failures: O3 (15 of 18 trials) and O7 (9 of 18 trials). O3 achieves zero successes across all three experimental conditions.
+In the Final condition, kinematic infeasibility (F3) is the dominant residual failure mode: 25 of 144 trials (17.4\,\%) end in motion-planner failure. Two orientations account for 96\,\% of these failures: O3 (15 of 18 trials) and O7 (9 of 18 trials). O3 achieves zero successes across all three experimental conditions.
 
 % The F3 pattern is constraint-induced rather than intrinsic to the robot's workspace. In Baseline~1, unconstrained vMF-Contact inference selects kinematically accessible candidates at O3 and O7 — all 18 O3 trials reach the motion planner, but all fail through grip force insufficiency (F1\,=\,18, F3\,=\,0). The centroid distance constraints introduced in Contribution~A confine candidate selection to the handle region, but handle-region candidates at O3 and O7 systematically require approach angles near the UR10e workspace boundary. The motion planner then fails to find collision-free joint trajectories, producing F3 failures.
 
@@ -1251,18 +1249,20 @@ Two operational mitigations were identified in \cref{sec:failure-mode-analysis-d
 \label{sec:appendix-filter-design}
 \begin{figure}
   \centering
-  \includegraphics[width=0.95\linewidth]{filter-cascade-diagram.png}
+  \includegraphics[width=0.8\linewidth]{filter-cascade-diagram.png}
   \caption{This figure shows the filter cascade architecture.}
   \label{fig:filter-cascade}
 \end{figure}
 
-The reachability filter extends the existing constraints set of \cref{sec:vmf-contact-inference} with two additional directional constraints on the grasp approach geometry. Both checks are geometric heuristics — lightweight vector operations computed from the candidate pose — that pre-discard approach directions associated with workspace-boundary configurations without invoking the IK solver or motion planner. A detailed filter cascade diagram is shown in \cref{fig:filter-cascade}.
+The reachability filter extends the existing constraints set of \cref{sec:vmf-contact-inference} with two additional directional constraints on the grasp approach geometry. A detailed filter cascade diagram is shown in \cref{fig:filter-cascade}. 
+
+The newly added constraints are geometric heuristics. They use simple vector operations computed from the candidate pose and robot frontal axis, without invoking the IK solver or motion planner. 
 
 \paragraph{Filter B1 — Frontal projection constraint.}
 
 \begin{figure}
   \centering
-  \includegraphics[width=0.95\linewidth]{frontal-overview-1.png}
+  \includegraphics[width=0.8\linewidth]{frontal-overview-1.png}
   \caption{This figure shows the actual spatial representation of the frontal projection constraint. The gripper y-axis \param{y\ensuremath{\sb{g}}} should be facing the robot's frontal direction $\mathbf{f}$.}
   \label{fig:frontal-overview}
 \end{figure}
@@ -1288,7 +1288,7 @@ A figure that represents the possible grasp poses after applying this filter is 
 
 \begin{figure}
   \centering
-  \includegraphics[width=0.95\linewidth]{vertical-grasp.png}
+  \includegraphics[width=0.8\linewidth]{vertical-grasp.png}
   \caption{This figure shows valid grasp pose after applying the filter B2-vertical approach constraint. The gripper's approach axis \param{z\ensuremath{\sb{g}}} (the z-axis of the gripper frame) is constrained to remain within $\theta_{\max}$ of the world z-axis $\param{z\ensuremath{\sb{w}}}$:}
   \label{fig:vertical-grasp}
 \end{figure}
@@ -1304,12 +1304,12 @@ The threshold $\theta_{\max}$($\param{grasp\_z\_negative\_world\_z\_angle\_th}) 
 
 A near-vertical approach minimises wrist rotation possibility and keeps the end-effector in the region of proper grasp workspace where the gripper would not approach the object from the side. This helps avoid tilted approach and eventually manual adjustment after placement because of the object face direction.
 
-There are three level filter switches in the final filter cascade. The \param{grasp\_cog\_max\_dist\_th} and \param{grasp\_cog\_max\_dist\_th} are the first level switch. By setting value to them, grasp zone will be limited to a certain area around the geometric centroid proxy, as described in \cref{sec:centroid-distance-constraints}. Otherwise, the node will work as the base vMF-Contact algorithm and no grasp candidates will be filtered. \param{use\_reachable\_grasp\_filter} is the second level switch to this cascade, which determines whether to use the filter B1 and B2 introduced in this chapter. It is parallel to Filter A, which is introduced in \cref{sec:axis-alignment-constraint}. But nly one group of filter can take in effect. This is the function of the third level filter \param{use\_cog\_filter}. They cannot exist at the same time as the axis alignment constaints is not compatible with the front direction constraints. With Filter A, grasp poses whose gripper y-axis is aligned with object principle axis are passed down. With Filter B1, grasp poses whose gripper y-axis is aligned with robot frontal axis are passed down. And candidate set will be sorted again based on B2. Those with gripper z-axis orientation out of the threshold will be filtered.
+There are three level filter switches in the final filter cascade. The \param{grasp\_cog\_max\_dist\_th} and \param{grasp\_cog\_max\_dist\_th} are the first level switch. By setting value to them, grasp zone will be limited to a certain area around the geometric centroid proxy, as described in \cref{sec:centroid-distance-constraints}. Otherwise, the node will work as the base vMF-Contact algorithm and no grasp candidates will be filtered. \param{use\_reachable\_grasp\_filter} is the second level switch to this cascade, which determines whether to use the filter B1 and B2 introduced in this chapter. It is parallel to Filter A, which is introduced in \cref{sec:axis-alignment-constraint}. But only one group of filter can take in effect. This is the function of the third level filter \param{use\_cog\_filter}. They cannot exist at the same time as the axis alignment constaints is not compatible with the front direction constraints. With Filter A, grasp poses whose gripper y-axis is aligned with object principle axis are passed down. With Filter B1, grasp poses whose gripper y-axis is aligned with robot frontal axis are passed down. And candidate set will be further filtered based on B2. Those with gripper z-axis orientation out of the threshold will be filtered.
 
 \section{Experimental Results}
 \label{sec:appendix-results}
 
-The evaluation uses a reduced factorial matrix: 8 object orientations (O1--O8) $\times$ 1 delivery position $\times$ 3 repetitions per cell, yielding 24 trials in total. The hardware and software configuration matches the Final condition: centroid-based constraints active ($d_{\max}$\,=\,0.025\,m, $d_{\min}$\,=\,0.01\,m, $th_{axis\_proj}$\,=\,0.5), custom curved silicone fingertips, UR10e + Orbbec Femto Mega + Robotiq 2F-140. The success criterion follows \cref{sec:success-criterion} (full pick-transport-place completion without object drop) and is extended with a placement-quality sub-category, and counted as completed trials in the Success column: \textbf{PS} flags trials where the object is placed inverted relative to the intended target pose. \cref{sec:appendix-limitations} discusses the tradeoff this category reflects.
+The evaluation uses a reduced factorial matrix: 8 object orientations (O1--O8) $\times$ 1 delivery position $\times$ 3 repetitions per cell, yielding 24 trials in total. The hardware and software configuration matches the Final condition: centroid-based constraints active ($d_{\max}$\,=\,0.025\,m, $d_{\min}$\,=\,0.01\,m, $th_{axis\_proj}$\,=\,0.5), custom curved silicone fingertips, UR10e + Orbbec Femto Mega + Robotiq 2F-140. The success criterion follows \cref{sec:success-criterion} (full pick-transport-place completion without object drop). The previously defined failure mode \textbf{F4} is now counted as a partial success (\textbf{PS}). It describes trials where the object is placed inverted relative to the intended target pose. It is a tradeoff of newly introduced filters. \cref{sec:appendix-limitations} discusses what this category reflects.
 
 The reduced matrix isolates orientation effects at a single position. Per-orientation results are directly comparable to the Final condition per-orientation counts in \cref{tab:appendix-results} at the evaluated position, isolating the effect of the reachability filter from position-level variation.
 
@@ -1319,7 +1319,7 @@ The reduced matrix isolates orientation effects at a single position. Per-orient
   \label{tab:appendix-results}
   \begin{tabular}{lrrrrr}
     \toprule
-    Orient. & F1(grip) & F2(no pose) & F3(kin.) & PS(Inverted orient.) & Success \\
+    Orient. & F1(Grip) & F2(No pose) & F3(Kin.) & PS(Inverted orient.) & Success \\
     \midrule
     O1 & 0 & 0 & 0 & 2 & 3 \\
     O2 & 0 & 0 & 0 & 2 & 3 \\
@@ -1345,21 +1345,23 @@ The reduced matrix isolates orientation effects at a single position. Per-orient
 
 Across all 24 trials, F1, F2, and F3 are fully eliminated (Table~\ref{tab:appendix-results}), including at O3 and O7, which achieved zero and low successes respectively across all three conditions in the main experiment (\cref{sec:failure-distribution-by-orientation}).
 
-The Fontal projection constraint (Filter B1) filters candidates whose gripper y-axis poses to the frontal direction of the robot station, which is the direct mechanism for the F3 elimination at these two orientations. Unlike the anticipated risk that a tighter candidate set at O3 and O7 would convert F3 trials into F2 trials, no F2 failures occur anywhere in the reduced matrix: the surviving candidate sets at every orientation retained at least one candidate that satisfied both new filters.  The vertical approach constraint (Filter B2, $\theta_{\max} = 10^{\circ}$) removes tilted gripper approach direction candidates before the motion planner is invoked.
+The fontal projection constraint (Filter B1) filters candidates whose gripper y-axis poses to the frontal direction of the robot station, which is the direct mechanism for the F3 elimination at these two orientations. Unlike the anticipated risk that a tighter candidate set at O3 and O7 would convert F3 trials into F2 trials, no F2 failures occur in the reduced matrix. The surviving candidate sets at every orientation retained at least one candidate that satisfied both new filters.  The vertical approach constraint (Filter B2, $\theta_{\max} = 10^{\circ}$) removes tilted gripper approach direction candidates before the motion planner is invoked.
 
 % The two filters also leave F1 unaffected, consistent with the two filters acting on approach geometry rather than on centroid-zone membership or axis alignment.
 
 \subsection{Limitations}
 \label{sec:appendix-limitations}
 
-The two new filters are geometric heuristics, not exact kinematic feasibility checks. On the one side, a candidate that passes both filters is not guaranteed to be reachable. On the other side, a candidate that fails one filter may in some cases be reachable via an alternative IK solution. The $10^{\circ}$ threshold for the vertical approach constraint was set empirically based on observation of F3 failure poses and has not been optimised over a parameter grid. A too tight threshold would increase F2. One that is too loose provides insufficient F3 reduction. The precise operating range of the threshold is an open question for future work.
+% The two new filters are geometric heuristics, not exact kinematic feasibility checks. On the one side, a candidate that passes both filters is not guaranteed to be reachable. On the other side, a candidate that fails one filter may in some cases be reachable via an alternative IK solution. 
 
-\textbf{Uninvestigated: position sensitivity.} The reachability filter was evaluated at a single position. Although it has been discussed in \cref{sec:failure-distribution-by-position} that in previous experiments the failures show no position-specific clustering, it is based on the filter A. Object Position may affect the completeness of the object in point cloud as well, if the camera always stays at the same viewpoint. Position-dependent effects are not evaluated in this set of expreiment and remain a direction for further investigation.
+\textbf{$\theta_{\max}$ threshold is an empirical value.}. The $10^{\circ}$ threshold for the vertical approach constraint was set empirically based on observation of F3 failure poses and has not been optimised over a parameter grid. A too tight threshold would increase F2. One that is too loose provides insufficient F3 reduction. The precise operating range of the threshold is an open question for future work.
 
-\textbf{Tradeoff of the reachability filter: inverted placement.} Eliminating F1--F3 does not come without cost. Of the 24 trials, 13 are placed inverted relative to the intended target pose (\textbf{PS}); only O4, O6 and O8 are entirely free of a placement defect. O3, O5, and O7 are inverted in all three trials.
+\textbf{Position sensitivity is not investigated.} The reachability filter was evaluated at a single position. Although it has been discussed in \cref{sec:failure-distribution-by-position} that in previous experiments the failures show no position-specific clustering, it is based on the filter A. Object Position may affect the completeness of the object in point cloud as well, if the camera always stays at the same viewpoint. Position-dependent effects are not evaluated in this set of expreiment and remain a direction for further investigation.
 
-This is a direct tradeoff of the frontal projection constraint (Filter B1, Eq.~\eqref{eq:frontal-projection}). Filter B1 selects candidates whose gripper y-axis projects positively onto the robot's frontal direction $\mathbf{f}$, without reference to which end of the object's principal axis the candidate sits on. At orientations where the axis-alignment filter (Filter A) leaves viable candidates on both ends of the principal axis, Filter B1 can select the end that satisfies the reachability heuristic rather than the end consistent with the fixed placement target. Because the placement stage executes a single hardcoded target pose regardless of which end of the object was grasped, a candidate selected from the "wrong" end arrives inverted at the delivery position. Since the reversed placement does not have a corresponding placement target pose, in some cases the object must be manually reoriented after placement to be usable.
+\textbf{Inverted placement comes as a tradeoff of the reachability filter} Eliminating F1--F3 does not come without cost. Of the 24 trials, 13 are placed inverted relative to the intended target pose (\textbf{PS}); only O4, O6 and O8 are entirely free of a placement defect. O3, O5, and O7 are inverted in all three trials.
 
-This tradeoff is acceptable for the current implementation. No trial drops the object ($\text{F1}$), fails to reach a valid pose ($\text{F2}$), or exceeds the robot's kinematic limits ($\text{F3}$). The inverted orientation is immediately visible upon placement, and is acceptable for subsequent CT inspections, as long as it lands on the holder. Exchanging a hard failure (F3, requiring a full retry cycle) for an immediately observable placement defect is a net improvement in a supervised deployment setting, even though it introduces a correction burden that Filters B1 and B2 alone do not remove. A flexible placement stage that recognizes the orientation and grasp point of the object being grasped and gives out a corresponding placement pose, rather than relying on a single hardcoded target pose, is left for future work.
+This is a direct tradeoff of the frontal projection constraint (Filter B1, Eq.~\eqref{eq:frontal-projection}). Filter B1 selects candidates whose gripper y-axis projects positively onto the robot's frontal direction $\mathbf{f}$, without reference to which end of the object's principal axis the candidate sits on. Filter B1 can select the grasp pose that satisfies the reachability filter rather than the one consistent with the fixed object principal axis. Because the placement stage executes a single hardcoded target pose regardless of which end of the object was grasped, a candidate grasped at an inverted orientation will also arrives inverted at the delivery position. Since the inversed placement does not have a corresponding placement target pose, in some cases the object must be manually reoriented after placement to be usable, depending on the use case.
+
+This tradeoff is acceptable for the current implementation. No trial drops the object ($\text{F1}$), fails to reach a valid pose ($\text{F2}$), or exceeds the robot's kinematic limits ($\text{F3}$). The inverted orientation is acceptable for the subsequent CT inspections in our case, as long as it lands on the holder. Exchanging a hard failure (F3, requiring a full retry cycle) for an immediately observable placement defect is a net improvement in a supervised deployment setting, even though it introduces a correction burden that Filters B1 and B2 alone do not remove. A flexible placement stage that recognizes the orientation and grasp point of the object being grasped and gives out a corresponding placement pose, rather than relying on a single hardcoded target pose, is left for future work.
 
 \end{document}
