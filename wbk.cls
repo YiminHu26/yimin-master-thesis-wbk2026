@@ -47,9 +47,10 @@
 	\RequirePackage{pgf}
 	\RequirePackage{setspace}
 		\setstretch{1.2}
-	\RequirePackage{natbib}  % ersetzt \RequirePackage{biblatex}
+	\RequirePackage[round,authoryear]{natbib}  % ersetzt \RequirePackage{biblatex}
 		\bibliographystyle{wbk} % benutzt wbk als bibliographiestil
 		\renewcommand\NAT@aysep{} % entfernt das komma zwischen autor und jahr
+		\let\cite\citep
 
 	\providecommand{\enquote}[1]{% dieser befehl ersetzt \RequirePackage{csquotes}, besser csqotes benutzen
 			\glqq #1\grqq}	% deutsch
