@@ -1,0 +1,248 @@
+\documentclass[12pt,a4paper]{report}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{cleveref}
+\graphicspath{{images/}}
+
+\title{Tables of the master thesis}
+\author{Yimin Hu}
+\date{July 2026}
+
+\begin{document}
+\maketitle
+% Front matter / unnumbered table of abbreviations
+\chapter*{Table of Abbreviations}
+
+\begin{longtable}{@{}p{0.13\textwidth}p{0.70\textwidth}p{0.13\textwidth}@{}}
+\toprule
+\textbf{Symbol} & \textbf{Meaning} & \textbf{Unit} \\
+\midrule
+\endhead
+$\hat{c}$ & Geometric centroid proxy & m \\
+$c_{\mathrm{obb}}$ & Centre of the object's oriented bounding box & m \\
+$c_{\mathrm{pcd}}$ & Centroid of the filtered point cloud & m \\
+$d_{\min}$ & Inner bound of the centroid-based grip zone & m \\
+$d_{\max}$ & Outer bound of the centroid-based grip zone & m \\
+$\mathbf{f}$ & UR10e nominal frontal direction vector & dimensionless \\
+$p$ & Projection of the gripper closing axis onto $\mathbf{f}$ & dimensionless \\
+$th_{axis\_proj}$ & Axis-alignment projection threshold & dimensionless \\
+$th_{frontal}$ & Frontal projection threshold, Filter B1 & dimensionless \\
+$y_g$ & Gripper closing axis ($y$-axis of the gripper frame) & dimensionless \\
+$z_g$ & Gripper approach axis ($z$-axis of the gripper frame) & dimensionless \\
+$z_w$ & World $z$-axis & dimensionless \\
+$\theta_{\max}$ & Maximum angular deviation for the vertical approach constraint, Filter B2 & $^{\circ}$ \\
+\bottomrule
+\end{longtable}
+
+\newpage
+\chapter{Introduction}
+
+\chapter{Fundamentals}
+% Chapter 2: Fundamentals
+\begin{table}[htbp]
+  \centering
+  \caption{Denavit--Hartenberg kinematic parameters for the UR10e, as published by the manufacturer.}
+  \label{tab:ur10e-dh-parameters}
+  \begin{tabular}{crrr}
+    \toprule
+    Joint $i$ & $a_i$ [m] & $d_i$ [m] & $\alpha_i$ [rad] \\
+    \midrule
+    1 & 0        & 0.1807  & $\pi/2$  \\
+    2 & -0.6127  & 0       & 0        \\
+    3 & -0.57155 & 0       & 0        \\
+    4 & 0        & 0.17415 & $\pi/2$  \\
+    5 & 0        & 0.11985 & $-\pi/2$ \\
+    6 & 0        & 0.11655 & 0        \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\newpage
+
+\chapter{Related Work}
+
+\chapter{Own Appraoch}
+
+\chapter{Experimental Setup and Results}
+\begin{table}[htbp]
+  \centering
+  \caption{Overall success rates per condition (144 trials each).}
+  \label{tab:success-rates}
+  \begin{tabular}{llllr}
+    \toprule
+    Condition & Algorithm & Fingertip & Successes & Rate \\
+    \midrule
+    Baseline~1 & vMF-Contact (unconstrained) & Robotiq original &
+      20 / 144 & 13.9\,\% \\
+    Baseline~2 & vMF-Contact + CoG constraints & Robotiq original &
+      58 / 144 & 40.3\,\% \\
+    Final & vMF-Contact + CoG constraints & Custom silicone &
+      111 / 144 & 77.1\,\% \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Failure mode counts per condition (144 trials each).}
+  \label{tab:failure-modes}
+  \begin{tabular}{llllll}
+    \toprule
+    Condition & F1 (grip) & F2 (no pose) & F3 (kinematic) &
+      F4 (orient.) & Success \\
+    \midrule
+    Baseline~1 & 103 & 0 & 11 & 10 & 20 \\
+    Baseline~2 & 71  & 1 & 14 &  0 & 58 \\
+    Final      &   1 & 7 & 25 &  0 & 111 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Baseline~1 orientation cluster classification (O1--O8).}
+  \label{tab:baseline1-orientation-clusters}
+  \begin{tabular}{lllll}
+    \toprule
+    Orientation & F1 & F2 & F3 & F4 \\
+    \midrule
+    O1 & 10 & 0 &  0 & 2 \\
+    O2 & 14 & 0 &  0 & 2 \\
+    O3 & 18 & 0 &  0 & 0 \\
+    O4 & 14 & 0 &  0 & 0 \\
+    O5 & 15 & 0 &  0 & 2 \\
+    O6 & 13 & 0 &  0 & 1 \\
+    O7 &  5 & 0 & 11 & 0 \\
+    O8 & 14 & 0 &  0 & 3 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Baseline~2 orientation cluster classification (O1--O8).}
+  \label{tab:baseline2-orientation-clusters}
+  \begin{tabular}{lllll}
+    \toprule
+    Orientation & F1 & F2 & F3 & F4 \\
+    \midrule
+    O1 &  9 & 0 &  0 & 0 \\
+    O2 & 16 & 0 &  0 & 0 \\
+    O3 &  5 & 1 & 12 & 0 \\
+    O4 &  2 & 0 &  0 & 0 \\
+    O5 & 10 & 0 &  1 & 0 \\
+    O6 & 11 & 0 &  0 & 0 \\
+    O7 & 13 & 0 &  1 & 0 \\
+    O8 &  5 & 0 &  0 & 0 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Final orientation cluster classification (O1--O8).}
+  \label{tab:final-orientation-clusters}
+  \begin{tabular}{lllll}
+    \toprule
+    Orientation & F1 & F2 & F3 & F4 \\
+    \midrule
+    O1 & 1 & 0 &  0 & 0 \\
+    O2 & 0 & 0 &  0 & 0 \\
+    O3 & 0 & 3 & 15 & 0 \\
+    O4 & 0 & 2 &  1 & 0 \\
+    O5 & 0 & 1 &  0 & 0 \\
+    O6 & 0 & 0 &  0 & 0 \\
+    O7 & 0 & 0 &  9 & 0 \\
+    O8 & 0 & 1 &  0 & 0 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Baseline~1 position cluster classification (P1--P6).}
+  \label{tab:baseline1-position-clusters}
+  \begin{tabular}{lllll}
+    \toprule
+    Position & F1 & F2 & F3 & F4 \\
+    \midrule
+    P1 & 16 & 0 & 2 & 3 \\
+    P2 & 17 & 0 & 3 & 3 \\
+    P3 & 16 & 0 & 3 & 1 \\
+    P4 & 15 & 0 & 3 & 0 \\
+    P5 & 20 & 0 & 0 & 2 \\
+    P6 & 19 & 0 & 0 & 1 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Baseline~2 position cluster classification (P1--P6).}
+  \label{tab:baseline2-position-clusters}
+  \begin{tabular}{lllll}
+    \toprule
+    Position & F1 & F2 & F3 & F4 \\
+    \midrule
+    P1 & 11 & 0 & 2 & 0 \\
+    P2 & 14 & 1 & 1 & 0 \\
+    P3 & 12 & 0 & 3 & 0 \\
+    P4 & 11 & 0 & 1 & 0 \\
+    P5 & 13 & 0 & 3 & 0 \\
+    P6 & 10 & 0 & 4 & 0 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Final position cluster classification (P1--P6).}
+  \label{tab:final-position-clusters}
+  \begin{tabular}{lllll}
+    \toprule
+    Position & F1 & F2 & F3 & F4 \\
+    \midrule
+    P1 & 0 & 0 & 5 & 0 \\
+    P2 & 0 & 3 & 0 & 0 \\
+    P3 & 0 & 0 & 5 & 0 \\
+    P4 & 0 & 0 & 4 & 0 \\
+    P5 & 1 & 1 & 6 & 0 \\
+    P6 & 0 & 3 & 5 & 0 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\newpage
+\renewcommand{\thefigure}{A.\arabic{figure}}
+\renewcommand{\thetable}{A.\arabic{table}}
+\chapter*{Appendix}
+\thispagestyle{empty}
+\quad \addtocounter{page}{-1}
+% Appendix
+\begin{table}[htbp]
+  \centering
+  \caption{Reachability filter evaluation: per-orientation failure counts and success (8\,orientations $\times$ 1\,position $\times$ 3\,trials\,=\,24\,trials total).}
+  \label{tab:appendix-results}
+  \begin{tabular}{lrrrrr}
+    \toprule
+    Orient. & F1(Grip) & F2(No pose) & F3(Kin.) & PS(Inverted orient.) & Success \\
+    \midrule
+    O1 & 0 & 0 & 0 & 2 & 3 \\
+    O2 & 0 & 0 & 0 & 2 & 3 \\
+    O3 & 0 & 0 & 0 & 3 & 3 \\
+    O4 & 0 & 0 & 0 & 0 & 3 \\
+    O5 & 0 & 0 & 0 & 3 & 3 \\
+    O6 & 0 & 0 & 0 & 0 & 3 \\
+    O7 & 0 & 0 & 0 & 3 & 3 \\
+    O8 & 0 & 0 & 0 & 0 & 3 \\
+    \midrule
+    \textbf{Total} & 0 & 0 & 0 & 13 & \textbf{24 / 24} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\end{document}

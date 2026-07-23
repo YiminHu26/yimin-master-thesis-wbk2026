@@ -690,7 +690,7 @@ Fingertip bodies were fabricated by fused deposition modelling (FDM) in polyacti
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.95\linewidth]{docker-structure-full.png}
+  \includegraphics[width=0.95\linewidth]{docker-structure-full.jpg}
   \caption{Multi-layer docker container structure }
   \label{fig:docker-container-structure}
 \end{figure}
@@ -868,22 +868,30 @@ Following all three filters introduced in \cref{sec:centroid-distance-constraint
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.95\linewidth]{F2.png}
+  \includegraphics[width=0.8\linewidth]{F2.png}
   \caption{Failure mode F2: No valid candidate after filtering.}
   \label{fig:failure-mode-F2}
 \end{figure}
 
 \subsubsection{F3 (Kinematic infeasibility)}
-A valid candidate is selected, but the MoveIt~2 planner fails to find a collision-free trajectory or certain joints exceed their limits (\cref{fig:failure-mode-F3}). Reported by the planning node or robot controller.
+A valid candidate is selected, but the MoveIt~2 planner fails to find a collision-free trajectory or certain joints exceed their limits (\cref{fig:failure-mode-F3-no-trajectory} and \cref{fig:failure-mode-F3-joint-limits}). Reported by the planning node or robot controller.
 
 The robot cannot reach a pose that is orientationally valid, because the required joint configuration falls outside the UR10e's reachable workspace or violates joint limits. F3 failures are independent of the object's geometry or the algorithm's candidate quality; they are a function of the spatial relationship between the candidate pose and the robot's kinematic envelope.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.95\linewidth]{F3.png}
-  \caption{Failure mode F3: Kinematic infeasibility. Target pose is
+  \includegraphics[width=0.7\linewidth]{F3-collision-trajectory.png}
+  \caption{Failure mode F3 in MoveIt~2: Kinematic infeasibility. Target pose is
     received, but the motion planner fails to find a collision-free trajectory or certain joints exceed their limits.}
-  \label{fig:failure-mode-F3}
+  \label{fig:failure-mode-F3-no-trajectory}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.6\linewidth]{F3-alart-joint-limit.jpg}
+  \caption{Failure mode F3 on UR10e: Kinematic infeasibility. Target pose is
+    received, but certain joints exceed their limits.}
+  \label{fig:failure-mode-F3-joint-limits}
 \end{figure}
 
 \subsubsection{F4 (Orientation error)}
